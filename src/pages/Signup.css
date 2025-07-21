@@ -4,3 +4,10 @@
     background-image: url('../assets/DigitalBg.png');
     background-size: cover;
 }
+
+.signup-section {
+    width: 60%;
+    height: 100%;
+    background-color: #FFFFFF;
+    padding: 20px 10px
+}

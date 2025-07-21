@@ -1,0 +1,11 @@
+.stepper-wrapper {
+    margin: auto 20px
+}
+
+.step-label .MuiStepLabel-iconContainer {
+    padding: 0;
+}
+
+.step-label .MuiStepLabel-labelContainer {
+    visibility: none;
+}
