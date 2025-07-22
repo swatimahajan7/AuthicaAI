@@ -4,7 +4,7 @@ import { SignupMethods, SignupSteps } from '../constants'
 import './Signup.css'
 import SignupForm, { type SignupFormHandle } from '../components/SignupForm'
 import AuthenticatorOTP from '../components/AuthenticatorOTP'
-import EmailMobileOTP from '../components/EmailMobileOTP'
+import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
 import FaceRecognition from '../components/FaceRecognition'
 import { Button, Box } from '@mui/material'
 import { useSignupContext } from '../context/signupContext'
@@ -16,6 +16,7 @@ const Signup = () => {
     const { formValues } = useSignupContext();
 
     const signupFormRef = useRef<SignupFormHandle>(null);
+    const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
 
     const handleNext = () => {
         const nextStep = SignupSteps[activeStepNumber + 1];
@@ -28,10 +29,17 @@ const Signup = () => {
     };
 
     const handleContinue = async () => {
-        // Check if we're on the SignupForm step
         if (activeStep === SignupMethods.usernamePassword) {
             const isValid = await signupFormRef.current?.validate();
             if (!isValid) return;
+        }
+
+        if (activeStep === SignupMethods.emailMobileOTP) {
+            const isVerified = emailOtpRef.current?.isVerified();
+            if (!isVerified) {
+                alert('Please complete both email and phone verification.');
+                return;
+            }
         }
 
         setCompleted({
@@ -50,13 +58,14 @@ const Signup = () => {
                     backgroundColor: '#f0f8ff',
                     paddingY: '50px',
                     boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 -4px 8px 0 rgba(0, 0, 0, 0.1)",
-                    borderRadius: '30px'
+                    borderRadius: '30px',
+                    overflowY: "scroll"
                 }}>
                     <img src='../src/assets/ACL-logo.svg' width={200} className='logo' />
                     {activeStep === SignupMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                    {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP email={formValues.email}
-                        phone={formValues.phone}
-                        onVerified={handleContinue} />}
+                    {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
+                        email={formValues.email}
+                        phone={formValues.phone} />}
                     {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP />}
                     {activeStep === SignupMethods.faceRecognition && <FaceRecognition />}
                 </Box>

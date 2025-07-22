@@ -1,26 +1,31 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Box, Button, Typography, TextField, Divider } from '@mui/material';
+
+export type EmailMobileOTPHandle = {
+    isVerified: () => boolean;
+};
 
 interface EmailMobileOTPProps {
     email: string;
     phone: string;
-    onVerified: () => void; // Callback when both verifications pass
 }
 
-const EmailMobileOTP = ({ email, phone, onVerified }: EmailMobileOTPProps) => {
-    // Email states
+const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ email, phone }, ref) => {
     const [emailCodeSent, setEmailCodeSent] = useState(false);
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
     const [emailInputCode, setEmailInputCode] = useState('');
     const [emailVerified, setEmailVerified] = useState(false);
     const [emailError, setEmailError] = useState('');
 
-    // Phone states
     const [phoneCodeSent, setPhoneCodeSent] = useState(false);
     const [phoneVerificationCode, setPhoneVerificationCode] = useState('');
     const [phoneInputCode, setPhoneInputCode] = useState('');
     const [phoneVerified, setPhoneVerified] = useState(false);
     const [phoneError, setPhoneError] = useState('');
+
+    useImperativeHandle(ref, () => ({
+        isVerified: () => emailVerified && phoneVerified,
+    }));
 
     const sendEmailCode = () => {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -56,18 +61,9 @@ const EmailMobileOTP = ({ email, phone, onVerified }: EmailMobileOTPProps) => {
         }
     };
 
-    // Notify parent only if both are verified
-    if (emailVerified && phoneVerified) {
-        onVerified();
-    }
-
     return (
         <Box display="flex" flexDirection="column" gap={4} mt={3}>
-            <Box sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-            }}>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <Typography variant="h6">Verify your email</Typography>
                 <Typography>{email}</Typography>
 
@@ -105,11 +101,7 @@ const EmailMobileOTP = ({ email, phone, onVerified }: EmailMobileOTPProps) => {
 
             <Divider />
 
-            <Box sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-            }}>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <Typography variant="h6">Verify your mobile</Typography>
                 <Typography>{phone}</Typography>
 
@@ -146,6 +138,6 @@ const EmailMobileOTP = ({ email, phone, onVerified }: EmailMobileOTPProps) => {
             </Box>
         </Box>
     );
-};
+});
 
 export default EmailMobileOTP;
