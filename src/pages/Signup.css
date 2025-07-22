@@ -3,11 +3,23 @@
     width: 100%;
     background-image: url('../assets/DigitalBg.png');
     background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .signup-section {
     width: 60%;
-    height: 100%;
+    height: 90%;
     background-color: #FFFFFF;
-    padding: 20px 10px
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 30px;
+}
+
+.logo {
+    justify-self: center;
+    display: flex;
 }

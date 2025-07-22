@@ -7,11 +7,13 @@ import AuthenticatorOTP from '../components/AuthenticatorOTP'
 import EmailMobileOTP from '../components/EmailMobileOTP'
 import FaceRecognition from '../components/FaceRecognition'
 import { Button, Box } from '@mui/material'
+import { useSignupContext } from '../context/signupContext'
 
 const Signup = () => {
     const [activeStep, setActiveStep] = useState(SignupSteps[0]);
     const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
     const activeStepNumber = SignupSteps.indexOf(activeStep);
+    const { formValues } = useSignupContext();
 
     const signupFormRef = useRef<SignupFormHandle>(null);
 
@@ -27,10 +29,10 @@ const Signup = () => {
 
     const handleContinue = async () => {
         // Check if we're on the SignupForm step
-        // if (activeStep === SignupMethods.usernamePassword) {
-        //     const isValid = await signupFormRef.current?.validate();
-        //     if (!isValid) return;
-        // }
+        if (activeStep === SignupMethods.usernamePassword) {
+            const isValid = await signupFormRef.current?.validate();
+            if (!isValid) return;
+        }
 
         setCompleted({
             ...completed,
@@ -44,12 +46,22 @@ const Signup = () => {
             <div className='signup-section'>
                 <StepperComponent steps={SignupSteps} activeStepNumber={activeStepNumber} completed={completed} />
 
-                {activeStep === SignupMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP />}
-                {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP />}
-                {activeStep === SignupMethods.faceRecognition && <FaceRecognition />}
+                <Box sx={{
+                    backgroundColor: '#f0f8ff',
+                    paddingY: '50px',
+                    boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 -4px 8px 0 rgba(0, 0, 0, 0.1)",
+                    borderRadius: '30px'
+                }}>
+                    <img src='../src/assets/ACL-logo.svg' width={200} className='logo' />
+                    {activeStep === SignupMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
+                    {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP email={formValues.email}
+                        phone={formValues.phone}
+                        onVerified={handleContinue} />}
+                    {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP />}
+                    {activeStep === SignupMethods.faceRecognition && <FaceRecognition />}
+                </Box>
 
-                <Box mt={2} display="flex" justifyContent="space-between">
+                <Box my={2} display="flex" justifyContent="space-between">
                     <Button variant="outlined" onClick={handleBack} disabled={activeStepNumber === 0}>
                         Back
                     </Button>
