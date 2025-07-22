@@ -3,7 +3,7 @@ import StepperComponent from '../components/StepperComponent'
 import { SignupMethods, SignupSteps } from '../constants'
 import './Signup.css'
 import SignupForm, { type SignupFormHandle } from '../components/SignupForm'
-import AuthenticatorOTP from '../components/AuthenticatorOTP'
+import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/AuthenticatorOTP';
 import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
 import FaceRecognition from '../components/FaceRecognition'
 import { Button, Box } from '@mui/material'
@@ -17,6 +17,7 @@ const Signup = () => {
 
     const signupFormRef = useRef<SignupFormHandle>(null);
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
+    const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
 
     const handleNext = () => {
         const nextStep = SignupSteps[activeStepNumber + 1];
@@ -38,6 +39,14 @@ const Signup = () => {
             const isVerified = emailOtpRef.current?.isVerified();
             if (!isVerified) {
                 alert('Please complete both email and phone verification.');
+                return;
+            }
+        }
+
+        if (activeStep === SignupMethods.authenticatorOTP) {
+            const isVerified = authenticatorRef.current?.isVerified();
+            if (!isVerified) {
+                alert('Please verify the Authenticator OTP before continuing.');
                 return;
             }
         }
@@ -66,7 +75,7 @@ const Signup = () => {
                     {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
                         email={formValues.email}
                         phone={formValues.phone} />}
-                    {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP />}
+                    {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} />}
                     {activeStep === SignupMethods.faceRecognition && <FaceRecognition />}
                 </Box>
 
