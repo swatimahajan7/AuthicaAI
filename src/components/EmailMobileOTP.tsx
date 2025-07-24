@@ -8,17 +8,18 @@ export type EmailMobileOTPHandle = {
 interface EmailMobileOTPProps {
     email: string;
     phone: string;
+    mode?: 'signup' | 'signin';
 }
 
-const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ email, phone }, ref) => {
-    const [emailCodeSent, setEmailCodeSent] = useState(false);
-    const [emailVerificationCode, setEmailVerificationCode] = useState('');
+const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ email, phone, mode = 'signup' }, ref) => {
+    const [emailCodeSent, setEmailCodeSent] = useState(mode === 'signin');
+    const [emailVerificationCode, setEmailVerificationCode] = useState('123123');
     const [emailInputCode, setEmailInputCode] = useState('');
     const [emailVerified, setEmailVerified] = useState(false);
     const [emailError, setEmailError] = useState('');
 
-    const [phoneCodeSent, setPhoneCodeSent] = useState(false);
-    const [phoneVerificationCode, setPhoneVerificationCode] = useState('');
+    const [phoneCodeSent, setPhoneCodeSent] = useState(mode === 'signin');
+    const [phoneVerificationCode, setPhoneVerificationCode] = useState('123123');
     const [phoneInputCode, setPhoneInputCode] = useState('');
     const [phoneVerified, setPhoneVerified] = useState(false);
     const [phoneError, setPhoneError] = useState('');
@@ -28,17 +29,15 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
     }));
 
     const sendEmailCode = () => {
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log('Mock email code:', code);
-        setEmailVerificationCode(code);
+        console.log(`${mode} email code: 123123`);
+        setEmailVerificationCode('123123');
         setEmailCodeSent(true);
         setEmailError('');
     };
 
     const sendPhoneCode = () => {
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log('Mock phone code:', code);
-        setPhoneVerificationCode(code);
+        console.log(`${mode} phone code: 123123`);
+        setPhoneVerificationCode('123123');
         setPhoneCodeSent(true);
         setPhoneError('');
     };
@@ -64,17 +63,18 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
     return (
         <Box display="flex" flexDirection="column" gap={4} mt={3}>
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography variant="h6">Verify your email</Typography>
+                <Typography variant="h6">{mode === 'signin' ? 'Verify your email to sign in' : 'Verify your email'}</Typography>
                 <Typography>{email}</Typography>
 
                 {!emailVerified ? (
                     <>
-                        {!emailCodeSent ? (
-                            <Button variant="contained" onClick={sendEmailCode} sx={{ mt: 1 }}>
-                                Send Email Code
-                            </Button>
-                        ) : (
+                        {emailCodeSent ? (
                             <>
+                                {mode === 'signin' && (
+                                    <Typography variant="caption" sx={{ mt: 1 }}>
+                                        OTP has been sent to your registered email.
+                                    </Typography>
+                                )}
                                 <TextField
                                     label="Enter Email Code"
                                     value={emailInputCode}
@@ -84,14 +84,20 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                     sx={{ my: 1 }}
                                 />
                                 <Box display="flex" gap={2} mt={1}>
-                                    <Button variant="outlined" onClick={sendEmailCode}>
-                                        Resend
-                                    </Button>
+                                    {mode === 'signup' && (
+                                        <Button variant="outlined" onClick={sendEmailCode}>
+                                            Resend
+                                        </Button>
+                                    )}
                                     <Button variant="contained" onClick={verifyEmail}>
                                         Verify Email
                                     </Button>
                                 </Box>
                             </>
+                        ) : (
+                            <Button variant="contained" onClick={sendEmailCode} sx={{ mt: 1 }}>
+                                Send Email Code
+                            </Button>
                         )}
                     </>
                 ) : (
@@ -102,17 +108,18 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
             <Divider />
 
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography variant="h6">Verify your mobile</Typography>
+                <Typography variant="h6">{mode === 'signin' ? 'Verify your mobile to sign in' : 'Verify your mobile'}</Typography>
                 <Typography>{phone}</Typography>
 
                 {!phoneVerified ? (
                     <>
-                        {!phoneCodeSent ? (
-                            <Button variant="contained" onClick={sendPhoneCode} sx={{ mt: 1 }}>
-                                Send SMS Code
-                            </Button>
-                        ) : (
+                        {phoneCodeSent ? (
                             <>
+                                {mode === 'signin' && (
+                                    <Typography variant="caption" sx={{ mt: 1 }}>
+                                        OTP has been sent to your registered mobile number.
+                                    </Typography>
+                                )}
                                 <TextField
                                     label="Enter SMS Code"
                                     value={phoneInputCode}
@@ -122,14 +129,20 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                     sx={{ my: 1 }}
                                 />
                                 <Box display="flex" gap={2} mt={1}>
-                                    <Button variant="outlined" onClick={sendPhoneCode}>
-                                        Resend
-                                    </Button>
+                                    {mode === 'signup' && (
+                                        <Button variant="outlined" onClick={sendPhoneCode}>
+                                            Resend
+                                        </Button>
+                                    )}
                                     <Button variant="contained" onClick={verifyPhone}>
                                         Verify Phone
                                     </Button>
                                 </Box>
                             </>
+                        ) : (
+                            <Button variant="contained" onClick={sendPhoneCode} sx={{ mt: 1 }}>
+                                Send SMS Code
+                            </Button>
                         )}
                     </>
                 ) : (
