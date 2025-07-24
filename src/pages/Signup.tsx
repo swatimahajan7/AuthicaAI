@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import StepperComponent from '../components/StepperComponent'
-import { SignupMethods, SignupSteps } from '../constants'
+import { AuthMethods, AuthSteps } from '../constants'
 import './Signup.css'
 import SignupForm, { type SignupFormHandle } from '../components/SignupForm'
 import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/AuthenticatorOTP';
@@ -11,9 +11,9 @@ import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceR
 import RegistrationSuccess from '../components/RegistrationSuccess'
 
 const Signup = () => {
-    const [activeStep, setActiveStep] = useState(SignupSteps[0]);
+    const [activeStep, setActiveStep] = useState(AuthSteps[0]);
     const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
-    const activeStepNumber = SignupSteps.indexOf(activeStep);
+    const activeStepNumber = AuthSteps.indexOf(activeStep);
     const isAllStepsComplete = activeStep === "success";
     const { formValues } = useSignupContext();
 
@@ -23,31 +23,30 @@ const Signup = () => {
     const faceRef = useRef<FaceRecognitionHandle>(null);
 
     const handleNext = () => {
-        const nextStep = SignupSteps[activeStepNumber + 1];
+        const nextStep = AuthSteps[activeStepNumber + 1];
         if (nextStep) {
             setActiveStep(nextStep);
         } else {
-            // Last step complete — manually mark as complete and show success
             setCompleted((prev) => ({
                 ...prev,
                 [activeStepNumber]: true,
             }));
-            setActiveStep("success"); // sentinel step value to trigger RegistrationSuccess
+            setActiveStep("success");
         }
     };
 
     const handleBack = () => {
-        const prevStep = SignupSteps[activeStepNumber - 1];
+        const prevStep = AuthSteps[activeStepNumber - 1];
         if (prevStep) setActiveStep(prevStep);
     };
 
     const handleContinue = async () => {
-        if (activeStep === SignupMethods.usernamePassword) {
+        if (activeStep === AuthMethods.usernamePassword) {
             const isValid = await signupFormRef.current?.validate();
             if (!isValid) return;
         }
 
-        if (activeStep === SignupMethods.emailMobileOTP) {
+        if (activeStep === AuthMethods.emailMobileOTP) {
             const isVerified = emailOtpRef.current?.isVerified();
             if (!isVerified) {
                 alert('Please complete both email and phone verification.');
@@ -55,7 +54,7 @@ const Signup = () => {
             }
         }
 
-        if (activeStep === SignupMethods.authenticatorOTP) {
+        if (activeStep === AuthMethods.authenticatorOTP) {
             const isVerified = authenticatorRef.current?.isVerified();
             if (!isVerified) {
                 alert('Please verify the Authenticator OTP before continuing.');
@@ -63,7 +62,7 @@ const Signup = () => {
             }
         }
 
-        if (activeStep === SignupMethods.faceRecognition) {
+        if (activeStep === AuthMethods.faceRecognition) {
             const isCaptured = faceRef.current?.isCaptured();
             if (!isCaptured) {
                 alert('Please capture your face before continuing.');
@@ -83,7 +82,7 @@ const Signup = () => {
             <div className='signup-section'>
                 {!isAllStepsComplete ? (
                     <>
-                        <StepperComponent steps={SignupSteps} activeStepNumber={activeStepNumber} completed={completed} />
+                        <StepperComponent steps={AuthSteps} activeStepNumber={activeStepNumber} completed={completed} />
 
                         <Box sx={{
                             backgroundColor: '#f0f8ff',
@@ -93,12 +92,13 @@ const Signup = () => {
                             overflowY: "scroll"
                         }}>
                             <img src='../src/assets/ACL-logo.svg' width={200} className='logo' />
-                            {activeStep === SignupMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                            {activeStep === SignupMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
+                            {activeStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
+                            {activeStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
                                 email={formValues.email}
-                                phone={formValues.phone} />}
-                            {activeStep === SignupMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} />}
-                            {activeStep === SignupMethods.faceRecognition && <FaceRecognition ref={faceRef} />}
+                                phone={formValues.phone}
+                                mode='signup' />}
+                            {activeStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode='signup' />}
+                            {activeStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
                         </Box>
 
                         <Box my={2} display="flex" justifyContent="space-between">

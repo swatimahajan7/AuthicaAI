@@ -7,13 +7,18 @@ export type FaceRecognitionHandle = {
   getImage: () => string | null;
 };
 
+interface FaceRecognitionProps {
+  mode?: 'signup' | 'signin';
+  onVerified?: () => void;
+}
+
 const videoConstraints = {
   width: 320,
   height: 240,
   facingMode: 'user'
 };
 
-const FaceRecognition = forwardRef<FaceRecognitionHandle>((_, ref) => {
+const FaceRecognition = forwardRef<FaceRecognitionHandle, FaceRecognitionProps>(({ mode = 'signup', onVerified }, ref) => {
   const webcamRef = useRef<Webcam>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
@@ -21,6 +26,7 @@ const FaceRecognition = forwardRef<FaceRecognitionHandle>((_, ref) => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setCapturedImage(imageSrc);
+      onVerified?.();
     }
   };
 
@@ -44,7 +50,9 @@ const FaceRecognition = forwardRef<FaceRecognitionHandle>((_, ref) => {
         margin: 'auto'
       }}
     >
-      <Typography variant="h6" textAlign="center">Register Your Face</Typography>
+      <Typography variant="h6" textAlign="center">
+        {mode === 'signin' ? 'Face Verification' : 'Register Your Face'}
+      </Typography>
 
       <Box
         sx={{
