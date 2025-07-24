@@ -1,8 +1,13 @@
-export const SignupMethods = {
+export const AuthMethods = {
     usernamePassword: 'usernamePassword',
     emailMobileOTP: 'emailMobileOTP',
     authenticatorOTP: 'authenticatorOTP',
     faceRecognition: 'faceRecognition'
 }
 
-export const SignupSteps = [SignupMethods.usernamePassword, SignupMethods.emailMobileOTP, SignupMethods.authenticatorOTP, SignupMethods.faceRecognition]
+export const AuthSteps = [
+    AuthMethods.usernamePassword,
+    AuthMethods.emailMobileOTP,
+    AuthMethods.authenticatorOTP,
+    AuthMethods.faceRecognition
+]
