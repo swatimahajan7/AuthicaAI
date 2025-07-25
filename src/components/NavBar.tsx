@@ -13,13 +13,17 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
-import logo from "../assets/ACL-logo.svg";
+import logo from "../assets/logo.svg";
 
 const pages = ["Users", "Settings"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 const notifications = ["New Users Signed Up", "Login Anomalies Detected"];
 
-function ResponsiveAppBar() {
+type ResponsiveAppBarProps = {
+  onTabChange?: (tabName: string) => void;
+};
+
+function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -139,7 +143,10 @@ function ResponsiveAppBar() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={handleCloseNavMenu}
+                onClick={() => {
+                  handleCloseNavMenu();
+                  onTabChange?.(page); 
+                }}
                 sx={{
                   my: 2,
                   color: "white",

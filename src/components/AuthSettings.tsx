@@ -188,7 +188,6 @@ const SeverityAuthTable = () => {
     }
   };
 
-  // DataGrid column definitions - memoized to prevent re-creation
   const columns: GridColDef[] = useMemo(() => [
     {
       field: 'severityLevel',
@@ -271,7 +270,6 @@ const SeverityAuthTable = () => {
           disableColumnMenu
           disableColumnSelector
           disableDensitySelector
-          autoHeight
           sx={{
             '& .MuiDataGrid-columnHeaders': {
               backgroundColor: '#1976d2',

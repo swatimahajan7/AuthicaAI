@@ -1,17 +1,17 @@
-import React from 'react'
-import Navbar from '../components/NavBar'
-import UserTable from '../components/SignedUpUsersTable'
-import SeverityAuthTable from '../components/AuthSettings'
+import React, { useState } from "react";
+import Navbar from "../components/NavBar";
+import UserTable from "../components/SignedUpUsersTable";
+import SeverityAuthTable from "../components/AuthSettings";
 
 const Dashboard = () => {
-    return (
-        <div>
-            <Navbar />
-            <UserTable />
-            {/* <SeverityAuthTable /> */}
-        </div>
+  const [activeTab, setActiveTab] = useState("user");
+  return (
+    <div>
+      <Navbar onTabChange={setActiveTab} />
+      {activeTab === "Users" && <UserTable />}
+      {activeTab === "Settings" && <SeverityAuthTable />}
+    </div>
+  );
+};
 
-    )
-}
-
-export default Dashboard
+export default Dashboard;
