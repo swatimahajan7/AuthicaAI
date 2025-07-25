@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import logo from "../assets/ACL-logo.svg";
 
 const pages = ["Users", "Settings"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
@@ -53,12 +54,9 @@ function ResponsiveAppBar() {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="primary">
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          <SecurityOutlinedIcon
-            sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}
-          />
           <Typography
             variant="h6"
             noWrap
@@ -67,14 +65,18 @@ function ResponsiveAppBar() {
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
-              fontFamily: "monospace",
+              fontFamily: "Lato",
               fontWeight: 700,
-              letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
             }}
           >
-            Authica
+            <img
+              src={logo}
+              alt="Company Logo"
+              style={{ width: "auto", marginRight: "20px" }}
+            />
+            AuthicaAi
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -111,9 +113,6 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-          <SecurityOutlinedIcon
-            sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}
-          />
           <Typography
             variant="h5"
             noWrap
@@ -123,14 +122,18 @@ function ResponsiveAppBar() {
               mr: 2,
               display: { xs: "flex", md: "none" },
               flexGrow: 1,
-              fontFamily: "monospace",
+              fontFamily: "Lato",
               fontWeight: 700,
-              letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
             }}
           >
-            Authica
+            <img
+              src={logo}
+              alt="Company Logo"
+              style={{ width: "auto", marginRight: "20px" }}
+            />
+            AuthicaAi
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
