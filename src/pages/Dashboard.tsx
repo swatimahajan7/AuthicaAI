@@ -4,7 +4,7 @@ import UserTable from "../components/SignedUpUsersTable";
 import SeverityAuthTable from "../components/AuthSettings";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("user");
+  const [activeTab, setActiveTab] = useState("Users");
   return (
     <div>
       <Navbar onTabChange={setActiveTab} />

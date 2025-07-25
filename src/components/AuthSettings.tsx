@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   DataGrid,
-  
 } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import {
@@ -17,7 +16,12 @@ import {
   Card,
   CardContent,
   Chip,
-  Paper
+  Paper,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -27,7 +31,9 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
   Fingerprint as FingerprintIcon,
-  Security as SecurityIcon
+  Security as SecurityIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 
 const SeverityAuthTable = () => {
@@ -36,30 +42,31 @@ const SeverityAuthTable = () => {
       id: 1,
       name: 'Low',
       class: 'low',
-      auth: ['Username', 'Password']
+      auth: ['Username & Password']
     },
     {
       id: 2,
       name: 'Medium', 
       class: 'medium',
-      auth: ['Username', 'Password', 'Phone OTP']
+      auth: ['Username & Password', 'Phone OTP']
     },
     {
       id: 3,
       name: 'High',
       class: 'high', 
-      auth: ['Username', 'Password', 'Phone OTP', 'Email OTP']
+      auth: ['Username & Password', 'Phone OTP', 'Email OTP']
     }
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingSeverity, setEditingSeverity] = useState(null);
   const [newSeverityName, setNewSeverityName] = useState('');
   const [selectedAuthMethods, setSelectedAuthMethods] = useState([]);
   const [customAuthMethod, setCustomAuthMethod] = useState('');
 
   const authOptions = useMemo(() => [
-    { id: 'username', label: 'Username', icon: <PersonIcon /> },
-    { id: 'password', label: 'Password', icon: <LockIcon /> },
+    { id: 'username-password', label: 'Username & Password', icon: <LockIcon /> },
     { id: 'phone-otp', label: 'Phone OTP', icon: <PhoneIcon /> },
     { id: 'email-otp', label: 'Email OTP', icon: <EmailIcon /> },
     { id: 'biometric', label: 'Biometric Authentication', icon: <FingerprintIcon /> },
@@ -68,8 +75,7 @@ const SeverityAuthTable = () => {
 
   const getAuthIcon = useCallback((authMethod) => {
     const method = authMethod.toLowerCase();
-    if (method.includes('username')) return <PersonIcon />;
-    if (method.includes('password')) return <LockIcon />;
+    if (method.includes('username') && method.includes('password')) return <LockIcon />;
     if (method.includes('phone')) return <PhoneIcon />;
     if (method.includes('email')) return <EmailIcon />;
     if (method.includes('biometric')) return <FingerprintIcon />;
@@ -93,19 +99,19 @@ const SeverityAuthTable = () => {
     switch (severity) {
       case 'low':
         return {
-          backgroundColor: '#ffebee', // Light red/pink
+          backgroundColor: '#ffebee',
           color: '#c62828',
           border: '1px solid #ef9a9a'
         };
       case 'medium':
         return {
-          backgroundColor: '#e57373', // Medium red
+          backgroundColor: '#e57373',
           color: '#ffffff',
           border: '1px solid #f44336'
         };
       case 'high':
         return {
-          backgroundColor: '#c62828', // Dark red
+          backgroundColor: '#c62828',
           color: '#ffffff',
           border: '1px solid #b71c1c'
         };
@@ -126,7 +132,31 @@ const SeverityAuthTable = () => {
     );
   }, []);
 
-  const handleAddSeverityLevel = () => {
+  const handleEditSeverity = (severity) => {
+    setEditingSeverity(severity);
+    setNewSeverityName(severity.name);
+    
+    // Map existing auth methods to option IDs
+    const mappedAuthMethods = [];
+    severity.auth.forEach(authMethod => {
+      const option = authOptions.find(opt => opt.label === authMethod);
+      if (option) {
+        mappedAuthMethods.push(option.id);
+      }
+    });
+    
+    setSelectedAuthMethods(mappedAuthMethods);
+    setCustomAuthMethod('');
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteSeverity = (severityId) => {
+    if (window.confirm('Are you sure you want to delete this severity level?')) {
+      setSeverityLevels(prev => prev.filter(level => level.id !== severityId));
+    }
+  };
+
+  const handleSaveSeverity = () => {
     if (!newSeverityName.trim()) {
       alert('Please enter a severity level name');
       return;
@@ -144,7 +174,13 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    if (severityLevels.some(level => level.name.toLowerCase() === newSeverityName.toLowerCase())) {
+    // Check if name already exists (excluding current item when editing)
+    const nameExists = severityLevels.some(level => 
+      level.name.toLowerCase() === newSeverityName.toLowerCase() && 
+      (!editingSeverity || level.id !== editingSeverity.id)
+    );
+
+    if (nameExists) {
       alert('This severity level already exists');
       return;
     }
@@ -157,28 +193,43 @@ const SeverityAuthTable = () => {
       return option ? option.label : methodId;
     });
 
-    const newLevel = {
-      id: Date.now(),
-      name: newSeverityName,
-      class: getSeverityClass(newSeverityName),
-      auth: authMethods
-    };
+    if (editingSeverity) {
+      // Update existing severity level
+      setSeverityLevels(prev => prev.map(level => 
+        level.id === editingSeverity.id 
+          ? {
+              ...level,
+              name: newSeverityName,
+              class: getSeverityClass(newSeverityName),
+              auth: authMethods
+            }
+          : level
+      ));
+      alert(`Successfully updated "${newSeverityName}" severity level.`);
+    } else {
+      // Add new severity level
+      const newLevel = {
+        id: Date.now(),
+        name: newSeverityName,
+        class: getSeverityClass(newSeverityName),
+        auth: authMethods
+      };
 
-    setSeverityLevels(prev => [...prev, newLevel]);
+      setSeverityLevels(prev => [...prev, newLevel]);
+      alert(`Successfully added "${newSeverityName}" severity level with ${finalAuthMethods.length} authentication method(s).`);
+    }
     
     // Reset form
-    setNewSeverityName('');
-    setSelectedAuthMethods([]);
-    setCustomAuthMethod('');
+    clearForm();
+    setEditDialogOpen(false);
     setShowAddForm(false);
-
-    alert(`Successfully added "${newSeverityName}" severity level with ${finalAuthMethods.length} authentication method(s).`);
   };
 
   const clearForm = () => {
     setNewSeverityName('');
     setSelectedAuthMethods([]);
     setCustomAuthMethod('');
+    setEditingSeverity(null);
   };
 
   const toggleAddForm = () => {
@@ -186,6 +237,11 @@ const SeverityAuthTable = () => {
     if (showAddForm) {
       clearForm();
     }
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    clearForm();
   };
 
   const columns: GridColDef[] = useMemo(() => [
@@ -237,6 +293,34 @@ const SeverityAuthTable = () => {
         </Box>
       ),
     },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      headerAlign: 'center',
+      align: 'center',
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => handleEditSeverity(params.row)}
+            title="Edit"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => handleDeleteSeverity(params.row.id)}
+            title="Delete"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
   ], [getSeverityChipStyles, getAuthIcon]);
 
   // Transform data for DataGrid - memoized to prevent recalculation
@@ -249,6 +333,71 @@ const SeverityAuthTable = () => {
     authMethods: level.auth
   })), [severityLevels]);
 
+  const renderAuthForm = () => (
+    <>
+      <TextField
+        fullWidth
+        label="Severity Level Name"
+        placeholder="Enter severity level (e.g., Critical, Very High)"
+        value={newSeverityName}
+        onChange={(e) => setNewSeverityName(e.target.value)}
+        sx={{ mb: 3 , mt:1}}
+        variant="outlined"
+      />
+
+      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
+        Select Authentication Methods
+      </Typography>
+      
+      <FormGroup sx={{ mb: 3 }}>
+        {authOptions.map((option) => (
+          <FormControlLabel
+            key={option.id}
+            control={
+              <Checkbox
+                checked={selectedAuthMethods.includes(option.id)}
+                onChange={() => handleAuthMethodToggle(option.id)}
+                color="primary"
+              />
+            }
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {option.icon}
+                <Typography sx={{ ml: 1 }}>{option.label}</Typography>
+              </Box>
+            }
+            sx={{
+              border: '1px solid #e0e0e0',
+              borderRadius: 1,
+              m: 0.5,
+              p: 1,
+              '&:hover': {
+                backgroundColor: '#f5f5f5'
+              }
+            }}
+          />
+        ))}
+      </FormGroup>
+
+      <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'medium', mt: 2 }}>
+        Add Custom Authentication Method (Optional)
+      </Typography>
+      
+      <TextField
+        fullWidth
+        label="Custom Authentication Method"
+        placeholder="Enter custom authentication method (e.g., Smart Card, Voice Recognition)"
+        value={customAuthMethod}
+        onChange={(e) => setCustomAuthMethod(e.target.value)}
+        multiline
+        rows={2}
+        sx={{ mb: 3 }}
+        variant="outlined"
+        helperText="Describe any additional authentication method not listed above"
+      />
+    </>
+  );
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
@@ -260,6 +409,7 @@ const SeverityAuthTable = () => {
         <DataGrid
           rows={rows}
           columns={columns}
+          rowHeight={70} 
           initialState={{
             pagination: {
               paginationModel: { page: 0, pageSize: 5 },
@@ -330,71 +480,12 @@ const SeverityAuthTable = () => {
               </Typography>
             </Box>
 
-            <TextField
-              fullWidth
-              label="Severity Level Name"
-              placeholder="Enter severity level (e.g., Critical, Very High)"
-              value={newSeverityName}
-              onChange={(e) => setNewSeverityName(e.target.value)}
-              sx={{ mb: 3 }}
-              variant="outlined"
-            />
-
-            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
-              Select Authentication Methods
-            </Typography>
-            
-            <FormGroup sx={{ mb: 3 }}>
-              {authOptions.map((option) => (
-                <FormControlLabel
-                  key={option.id}
-                  control={
-                    <Checkbox
-                      checked={selectedAuthMethods.includes(option.id)}
-                      onChange={() => handleAuthMethodToggle(option.id)}
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {option.icon}
-                      <Typography sx={{ ml: 1 }}>{option.label}</Typography>
-                    </Box>
-                  }
-                  sx={{
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
-                    m: 0.5,
-                    p: 1,
-                    '&:hover': {
-                      backgroundColor: '#f5f5f5'
-                    }
-                  }}
-                />
-              ))}
-            </FormGroup>
-
-            <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'medium', mt: 2 }}>
-              Add Custom Authentication Method (Optional)
-            </Typography>
-            
-            <TextField
-              fullWidth
-              label="Custom Authentication Method"
-              placeholder="Enter custom authentication method (e.g., Smart Card, Voice Recognition)"
-              value={customAuthMethod}
-              onChange={(e) => setCustomAuthMethod(e.target.value)}
-              multiline
-              rows={2}
-              sx={{ mb: 3 }}
-              variant="outlined"
-              helperText="Describe any additional authentication method not listed above"
-            />
+            {renderAuthForm()}
 
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={handleAddSeverityLevel}
+              onClick={handleSaveSeverity}
               sx={{ mt: 1 }}
             >
               Add Severity Level
@@ -402,6 +493,37 @@ const SeverityAuthTable = () => {
           </CardContent>
         </Card>
       </Collapse>
+
+      {/* Edit Dialog */}
+      <Dialog 
+        open={editDialogOpen} 
+        onClose={handleCloseEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center'  }}>
+            <EditIcon color="primary" sx={{ mr: 1 }} />
+            Edit Severity Level
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {renderAuthForm()}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseEditDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveSeverity} 
+            variant="contained" 
+            color="primary"
+            startIcon={<EditIcon />}
+          >
+            Update Severity Level
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
