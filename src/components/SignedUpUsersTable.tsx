@@ -9,7 +9,7 @@ import {
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 
 const Dashboard = () => {
-  // Mock user data - in real app this would come from backend
+  
   const [users, setUsers] = useState<User[]>([
     {
       id: 1,
@@ -97,7 +97,6 @@ const Dashboard = () => {
     return newRow;
   };
 
-  // Define columns for DataGrid
   const columns: GridColDef<User>[] = [
     {
       field: 'id',
@@ -129,8 +128,6 @@ const Dashboard = () => {
       field: 'signupDate',
       headerName: 'Signup Date',
       flex: 1,
-      // type: 'date',
-      // valueGetter: (params: any) => new Date(params.value),
     },
     {
       field: 'status',
@@ -164,13 +161,11 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      {/* Main Content */}
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
           Users Management
         </Typography>
 
-        {/* DataGrid */}
         <Box sx={{ minHeight: 400, width: '100%' }}>
           <DataGrid
             rows={users}
