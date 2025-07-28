@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   DataGrid,
 } from '@mui/x-data-grid';
@@ -13,7 +13,6 @@ import {
   Box,
   Container,
   Chip,
-  Paper,
   IconButton,
   Dialog,
   DialogTitle,
@@ -22,7 +21,6 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Person as PersonIcon,
   Lock as LockIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
@@ -42,22 +40,22 @@ const SeverityAuthTable = () => {
     },
     {
       id: 2,
-      name: 'Medium', 
+      name: 'Medium',
       class: 'medium',
       auth: ['Username & Password', 'Phone OTP']
     },
     {
       id: 3,
       name: 'High',
-      class: 'high', 
+      class: 'high',
       auth: ['Username & Password', 'Phone OTP', 'Email OTP']
     }
   ]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingSeverity, setEditingSeverity] = useState(null);
+  const [editingSeverity, setEditingSeverity] = useState<any>(null);
   const [newSeverityName, setNewSeverityName] = useState('');
-  const [selectedAuthMethods, setSelectedAuthMethods] = useState([]);
+  const [selectedAuthMethods, setSelectedAuthMethods] = useState<any>([]);
   const [customAuthMethod, setCustomAuthMethod] = useState('');
 
   const authOptions = useMemo(() => [
@@ -68,7 +66,7 @@ const SeverityAuthTable = () => {
     { id: 'hardware-token', label: 'Hardware Token (2FA)', icon: <SecurityIcon /> }
   ], []);
 
-  const getAuthIcon = useCallback((authMethod) => {
+  const getAuthIcon = useCallback((authMethod: any) => {
     const method = authMethod.toLowerCase();
     if (method.includes('username') && method.includes('password')) return <LockIcon />;
     if (method.includes('phone')) return <PhoneIcon />;
@@ -78,7 +76,7 @@ const SeverityAuthTable = () => {
     return <SecurityIcon />;
   }, []);
 
-  const getSeverityClass = (name) => {
+  const getSeverityClass = (name: string) => {
     const lowerName = name.toLowerCase();
     if (lowerName.includes('low') || lowerName.includes('minimal')) {
       return 'low';
@@ -89,7 +87,7 @@ const SeverityAuthTable = () => {
     }
   };
 
-  const getSeverityChipStyles = useCallback((severity) => {
+  const getSeverityChipStyles = useCallback((severity: string) => {
     switch (severity) {
       case 'low':
         return {
@@ -118,10 +116,10 @@ const SeverityAuthTable = () => {
     }
   }, []);
 
-  const handleAuthMethodToggle = useCallback((methodId) => {
-    setSelectedAuthMethods(prev => 
-      prev.includes(methodId) 
-        ? prev.filter(id => id !== methodId)
+  const handleAuthMethodToggle = useCallback((methodId: any) => {
+    setSelectedAuthMethods((prev: any) =>
+      prev.includes(methodId)
+        ? prev.filter((id: any) => id !== methodId)
         : [...prev, methodId]
     );
   }, []);
@@ -132,24 +130,24 @@ const SeverityAuthTable = () => {
     setDialogOpen(true);
   };
 
-  const handleEditSeverity = (severity) => {
+  const handleEditSeverity = (severity: any) => {
     setEditingSeverity(severity);
     setNewSeverityName(severity.name);
-    
-    const mappedAuthMethods = [];
-    severity.auth.forEach(authMethod => {
+
+    const mappedAuthMethods: any = [];
+    severity.auth.forEach((authMethod: any) => {
       const option = authOptions.find(opt => opt.label === authMethod);
       if (option) {
         mappedAuthMethods.push(option.id);
       }
     });
-    
+
     setSelectedAuthMethods(mappedAuthMethods);
     setCustomAuthMethod('');
     setDialogOpen(true);
   };
 
-  const handleDeleteSeverity = (severityId) => {
+  const handleDeleteSeverity = (severityId: any) => {
     if (window.confirm('Are you sure you want to delete this severity level?')) {
       setSeverityLevels(prev => prev.filter(level => level.id !== severityId));
     }
@@ -162,7 +160,7 @@ const SeverityAuthTable = () => {
     }
 
     let finalAuthMethods = [...selectedAuthMethods];
-    
+
     if (customAuthMethod.trim()) {
       finalAuthMethods.push('custom-' + Date.now());
     }
@@ -172,8 +170,8 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    const nameExists = severityLevels.some(level => 
-      level.name.toLowerCase() === newSeverityName.toLowerCase() && 
+    const nameExists = severityLevels.some(level =>
+      level.name.toLowerCase() === newSeverityName.toLowerCase() &&
       (!editingSeverity || level.id !== editingSeverity.id)
     );
 
@@ -182,7 +180,7 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    const authMethods = finalAuthMethods.map(methodId => {
+    const authMethods = finalAuthMethods.map((methodId: any) => {
       if (methodId.startsWith('custom-')) {
         return customAuthMethod.trim();
       }
@@ -191,14 +189,14 @@ const SeverityAuthTable = () => {
     });
 
     if (editingSeverity) {
-      setSeverityLevels(prev => prev.map(level => 
-        level.id === editingSeverity.id 
+      setSeverityLevels(prev => prev.map(level =>
+        level.id === editingSeverity.id
           ? {
-              ...level,
-              name: newSeverityName,
-              class: getSeverityClass(newSeverityName),
-              auth: authMethods
-            }
+            ...level,
+            name: newSeverityName,
+            class: getSeverityClass(newSeverityName),
+            auth: authMethods
+          }
           : level
       ));
       alert(`Successfully updated "${newSeverityName}" severity level.`);
@@ -213,7 +211,7 @@ const SeverityAuthTable = () => {
       setSeverityLevels(prev => [...prev, newLevel]);
       alert(`Successfully added "${newSeverityName}" severity level with ${finalAuthMethods.length} authentication method(s).`);
     }
-    
+
     handleCloseDialog();
   };
 
@@ -234,13 +232,12 @@ const SeverityAuthTable = () => {
       field: 'severityLevel',
       headerName: 'Severity Level',
       flex: 1,
-      minWidth: 200,
       headerAlign: 'center',
       align: 'center',
       renderCell: (params: GridRenderCellParams) => (
-        <Chip 
+        <Chip
           label={params.row.name}
-          sx={{ 
+          sx={{
             fontWeight: 'medium',
             ...getSeverityChipStyles(params.row.class)
           }}
@@ -251,15 +248,14 @@ const SeverityAuthTable = () => {
       field: 'authMethods',
       headerName: 'Auth Type',
       flex: 2,
-      minWidth: 400,
       headerAlign: 'center',
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: 0.5, 
-          py: 1,
-          alignItems: 'center'
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 0.5,
+          height: '100%',
+          alignItems: 'center',
         }}>
           {params.row.auth.map((method: string, idx: number) => (
             <Chip
@@ -269,7 +265,7 @@ const SeverityAuthTable = () => {
               variant="outlined"
               color="primary"
               size="small"
-              sx={{ 
+              sx={{
                 backgroundColor: '#e3f2fd',
                 maxHeight: '24px'
               }}
@@ -281,12 +277,12 @@ const SeverityAuthTable = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 120,
+      flex: 1,
       headerAlign: 'center',
       align: 'center',
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box>
           <IconButton
             size="small"
             color="primary"
@@ -332,7 +328,7 @@ const SeverityAuthTable = () => {
       <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
         Select Authentication Methods
       </Typography>
-      
+
       <FormGroup sx={{ mb: 3 }}>
         {authOptions.map((option) => (
           <FormControlLabel
@@ -366,7 +362,7 @@ const SeverityAuthTable = () => {
       <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'medium', mt: 2 }}>
         Add Custom Authentication Method (Optional)
       </Typography>
-      
+
       <TextField
         fullWidth
         label="Custom Authentication Method"
@@ -388,62 +384,31 @@ const SeverityAuthTable = () => {
         Severity Level Authentication Configuration
       </Typography>
 
-      <Paper elevation={3} sx={{ mb: 3 }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          rowHeight={70} 
-          initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 5 },
-            },
-          }}
-          pageSizeOptions={[5, 10]}
-          disableRowSelectionOnClick
-          disableColumnMenu
-          disableColumnSelector
-          disableDensitySelector
-          sx={{
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: '#1976d2',
-              '& .MuiDataGrid-columnHeader': {
-                backgroundColor: '#1976d2',
-              },
-              '& .MuiDataGrid-columnHeaderTitle': {
-                color: '#ffffff !important',
-                fontWeight: 'bold !important',
-                fontSize: '16px'
-              },
-              '& .MuiDataGrid-iconSeparator': {
-                color: '#ffffff'
-              },
-              '& .MuiDataGrid-sortIcon': {
-                color: '#ffffff'
-              },
-              '& .MuiDataGrid-menuIconButton': {
-                color: '#ffffff'
-              }
-            },
-            '& .MuiDataGrid-row:hover': {
-              backgroundColor: '#f0f0f0',
-            },
-            '& .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: '#fafafa',
-            },
-            '& .MuiDataGrid-cell': {
-              borderBottom: '1px solid #e0e0e0',
-            },
-            border: 'none'
-          }}
-        />
-      </Paper>
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel: { page: 0, pageSize: 5 },
+          },
+        }}
+        pageSizeOptions={[5, 10]}
+        disableRowSelectionOnClick
+        disableColumnMenu
+        disableColumnSelector
+        disableDensitySelector
+        density='comfortable'
+        sx={{
+          marginBottom: '20px'
+        }}
+      />
 
       <Button
         variant="contained"
         color="primary"
         startIcon={<AddIcon />}
         onClick={handleAddSeverity}
-        sx={{ 
+        sx={{
           mb: 2,
           transition: 'all 0.3s ease'
         }}
@@ -451,8 +416,8 @@ const SeverityAuthTable = () => {
         Add Auth and Severity
       </Button>
 
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
@@ -470,9 +435,9 @@ const SeverityAuthTable = () => {
           <Button onClick={handleCloseDialog} color="secondary">
             Cancel
           </Button>
-          <Button 
-            onClick={handleSaveSeverity} 
-            variant="contained" 
+          <Button
+            onClick={handleSaveSeverity}
+            variant="contained"
             color="primary"
             startIcon={editingSeverity ? <EditIcon /> : <AddIcon />}
           >

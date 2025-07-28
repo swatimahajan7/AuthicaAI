@@ -9,7 +9,7 @@ import {
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 
 const Dashboard = () => {
-  
+
   const [users, setUsers] = useState<User[]>([
     {
       id: 1,
@@ -75,18 +75,39 @@ const Dashboard = () => {
     }
   };
 
-  interface RoleColorMap {
-    [key: string]: 'error' | 'warning' | 'primary' | 'default';
-  }
-
-  const getRoleColor = (role: string): 'error' | 'warning' | 'primary' | 'default' => {
-    const roleColorMap: RoleColorMap = {
-      'Very high': 'error',
-      High: 'error',
-      Medium: 'warning',
-      Low: 'primary'
-    };
-    return roleColorMap[role] || 'default';
+  const getSeverityStyles = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'low':
+        return {
+          backgroundColor: '#ffebee',
+          color: '#c62828',
+          border: '1px solid #ef9a9a',
+        };
+      case 'medium':
+        return {
+          backgroundColor: '#e57373',
+          color: '#ffffff',
+          border: '1px solid #f44336',
+        };
+      case 'high':
+        return {
+          backgroundColor: '#c62828',
+          color: '#ffffff',
+          border: '1px solid #b71c1c',
+        };
+      case 'very high':
+        return {
+          backgroundColor: '#b71c1c',
+          color: '#ffffff',
+          border: '1px solid #880e4f',
+        };
+      default:
+        return {
+          backgroundColor: '#f5f5f5',
+          color: '#666666',
+          border: '1px solid #cccccc',
+        };
+    }
   };
 
   const handleRowUpdate = (newRow: User, oldRow: User) => {
@@ -151,9 +172,13 @@ const Dashboard = () => {
       renderCell: (params: any) => (
         <Chip
           label={params.value}
-          color={getRoleColor(params.value)}
-          variant="outlined"
           size="small"
+          variant="outlined"
+          sx={{
+            textTransform: 'capitalize',
+            fontWeight: 500,
+            ...getSeverityStyles(params.value),
+          }}
         />
       ),
     },
