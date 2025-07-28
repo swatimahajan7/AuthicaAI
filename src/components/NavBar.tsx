@@ -16,12 +16,10 @@ import Badge from "@mui/material/Badge";
 import logo from "../assets/logo.svg";
 import { NotificationsList, type NotificationItem } from "./NotificationsList";
 
-// ----------------- Types ---------------------
 type ResponsiveAppBarProps = {
   onTabChange?: (tabName: string) => void;
 };
 
-// ----------------- Component ---------------------
 const pages = ["Users", "Settings"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
@@ -69,7 +67,7 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
     <AppBar position="static" color="primary">
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          {/* Desktop Logo */}
+
           <Typography
             variant="h6"
             noWrap
@@ -92,7 +90,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             AuthicaAI
           </Typography>
 
-          {/* Mobile Menu Icon */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
@@ -124,7 +121,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             </Menu>
           </Box>
 
-          {/* Mobile Logo */}
           <Typography
             variant="h5"
             noWrap
@@ -148,7 +144,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             AuthicaAI
           </Typography>
 
-          {/* Desktop Menu Buttons */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
@@ -171,7 +166,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             ))}
           </Box>
 
-          {/* Notifications and Avatar */}
           <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
             <Tooltip title="View notifications">
               <IconButton
@@ -206,7 +200,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
               />
             </Menu>
 
-            {/* User Avatar */}
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Admin Avatar" src="/static/images/avatar/2.jpg" />

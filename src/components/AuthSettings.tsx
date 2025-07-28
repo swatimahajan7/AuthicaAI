@@ -12,9 +12,6 @@ import {
   Typography,
   Box,
   Container,
-  Collapse,
-  Card,
-  CardContent,
   Chip,
   Paper,
   IconButton,
@@ -25,7 +22,6 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Close as CloseIcon,
   Person as PersonIcon,
   Lock as LockIcon,
   Phone as PhoneIcon,
@@ -58,8 +54,7 @@ const SeverityAuthTable = () => {
     }
   ]);
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSeverity, setEditingSeverity] = useState(null);
   const [newSeverityName, setNewSeverityName] = useState('');
   const [selectedAuthMethods, setSelectedAuthMethods] = useState([]);
@@ -80,7 +75,6 @@ const SeverityAuthTable = () => {
     if (method.includes('email')) return <EmailIcon />;
     if (method.includes('biometric')) return <FingerprintIcon />;
     if (method.includes('token') || method.includes('2fa')) return <SecurityIcon />;
-    // For custom auth methods
     return <SecurityIcon />;
   }, []);
 
@@ -132,11 +126,16 @@ const SeverityAuthTable = () => {
     );
   }, []);
 
+  const handleAddSeverity = () => {
+    setEditingSeverity(null);
+    clearForm();
+    setDialogOpen(true);
+  };
+
   const handleEditSeverity = (severity) => {
     setEditingSeverity(severity);
     setNewSeverityName(severity.name);
     
-    // Map existing auth methods to option IDs
     const mappedAuthMethods = [];
     severity.auth.forEach(authMethod => {
       const option = authOptions.find(opt => opt.label === authMethod);
@@ -147,7 +146,7 @@ const SeverityAuthTable = () => {
     
     setSelectedAuthMethods(mappedAuthMethods);
     setCustomAuthMethod('');
-    setEditDialogOpen(true);
+    setDialogOpen(true);
   };
 
   const handleDeleteSeverity = (severityId) => {
@@ -164,7 +163,6 @@ const SeverityAuthTable = () => {
 
     let finalAuthMethods = [...selectedAuthMethods];
     
-    // Add custom auth method if provided
     if (customAuthMethod.trim()) {
       finalAuthMethods.push('custom-' + Date.now());
     }
@@ -174,7 +172,6 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    // Check if name already exists (excluding current item when editing)
     const nameExists = severityLevels.some(level => 
       level.name.toLowerCase() === newSeverityName.toLowerCase() && 
       (!editingSeverity || level.id !== editingSeverity.id)
@@ -194,7 +191,6 @@ const SeverityAuthTable = () => {
     });
 
     if (editingSeverity) {
-      // Update existing severity level
       setSeverityLevels(prev => prev.map(level => 
         level.id === editingSeverity.id 
           ? {
@@ -207,7 +203,6 @@ const SeverityAuthTable = () => {
       ));
       alert(`Successfully updated "${newSeverityName}" severity level.`);
     } else {
-      // Add new severity level
       const newLevel = {
         id: Date.now(),
         name: newSeverityName,
@@ -219,28 +214,18 @@ const SeverityAuthTable = () => {
       alert(`Successfully added "${newSeverityName}" severity level with ${finalAuthMethods.length} authentication method(s).`);
     }
     
-    // Reset form
-    clearForm();
-    setEditDialogOpen(false);
-    setShowAddForm(false);
+    handleCloseDialog();
   };
 
   const clearForm = () => {
     setNewSeverityName('');
     setSelectedAuthMethods([]);
     setCustomAuthMethod('');
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
     setEditingSeverity(null);
-  };
-
-  const toggleAddForm = () => {
-    setShowAddForm(!showAddForm);
-    if (showAddForm) {
-      clearForm();
-    }
-  };
-
-  const handleCloseEditDialog = () => {
-    setEditDialogOpen(false);
     clearForm();
   };
 
@@ -323,7 +308,6 @@ const SeverityAuthTable = () => {
     },
   ], [getSeverityChipStyles, getAuthIcon]);
 
-  // Transform data for DataGrid - memoized to prevent recalculation
   const rows = useMemo(() => severityLevels.map(level => ({
     id: level.id,
     name: level.name,
@@ -341,7 +325,7 @@ const SeverityAuthTable = () => {
         placeholder="Enter severity level (e.g., Critical, Very High)"
         value={newSeverityName}
         onChange={(e) => setNewSeverityName(e.target.value)}
-        sx={{ mb: 3 , mt:1}}
+        sx={{ mb: 3, mt: 1 }}
         variant="outlined"
       />
 
@@ -404,7 +388,6 @@ const SeverityAuthTable = () => {
         Severity Level Authentication Configuration
       </Typography>
 
-      {/* DataGrid */}
       <Paper elevation={3} sx={{ mb: 3 }}>
         <DataGrid
           rows={rows}
@@ -455,72 +438,45 @@ const SeverityAuthTable = () => {
         />
       </Paper>
 
-      {/* Add Button */}
       <Button
         variant="contained"
         color="primary"
-        startIcon={showAddForm ? <CloseIcon /> : <AddIcon />}
-        onClick={toggleAddForm}
+        startIcon={<AddIcon />}
+        onClick={handleAddSeverity}
         sx={{ 
           mb: 2,
           transition: 'all 0.3s ease'
         }}
       >
-        {showAddForm ? 'Cancel' : 'Add Auth and Severity'}
+        Add Auth and Severity
       </Button>
 
-      {/* Add New Form */}
-      <Collapse in={showAddForm}>
-        <Card elevation={3} sx={{ mt: 3 }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <AddIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6" component="h2">
-                Add New Severity Level
-              </Typography>
-            </Box>
-
-            {renderAuthForm()}
-
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleSaveSeverity}
-              sx={{ mt: 1 }}
-            >
-              Add Severity Level
-            </Button>
-          </CardContent>
-        </Card>
-      </Collapse>
-
-      {/* Edit Dialog */}
       <Dialog 
-        open={editDialogOpen} 
-        onClose={handleCloseEditDialog}
+        open={dialogOpen} 
+        onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center'  }}>
-            <EditIcon color="primary" sx={{ mr: 1 }} />
-            Edit Severity Level
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {editingSeverity ? <EditIcon color="primary" sx={{ mr: 1 }} /> : <AddIcon color="primary" sx={{ mr: 1 }} />}
+            {editingSeverity ? 'Edit Severity Level' : 'Add New Severity Level'}
           </Box>
         </DialogTitle>
         <DialogContent>
           {renderAuthForm()}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseEditDialog} color="secondary">
+          <Button onClick={handleCloseDialog} color="secondary">
             Cancel
           </Button>
           <Button 
             onClick={handleSaveSeverity} 
             variant="contained" 
             color="primary"
-            startIcon={<EditIcon />}
+            startIcon={editingSeverity ? <EditIcon /> : <AddIcon />}
           >
-            Update Severity Level
+            {editingSeverity ? 'Update Severity Level' : 'Add Severity Level'}
           </Button>
         </DialogActions>
       </Dialog>
