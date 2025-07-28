@@ -397,6 +397,7 @@ const SeverityAuthTable = () => {
         disableColumnMenu
         disableColumnSelector
         disableDensitySelector
+        density='comfortable'
         sx={{
           marginBottom: '20px'
         }}
