@@ -93,7 +93,7 @@ const Signin = () => {
                             sx={{
                                 backgroundColor: '#f0f8ff',
                                 paddingY: '50px',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 -4px 8px 0 rgba(0, 0, 0, 0.1)",
                                 borderRadius: '30px',
                                 overflowY: 'scroll',
                             }}
