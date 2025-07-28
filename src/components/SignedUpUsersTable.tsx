@@ -171,7 +171,7 @@ const Dashboard = () => {
         </Typography>
 
         {/* DataGrid */}
-        <Box sx={{ height: 400, width: '100%' }}>
+        <Box sx={{ minHeight: 400, width: '100%' }}>
           <DataGrid
             rows={users}
             columns={columns}
