@@ -12,60 +12,69 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import Badge from "@mui/material/Badge";
 import logo from "../assets/logo.svg";
+import { NotificationsList, type NotificationItem } from "./NotificationsList";
 
-const pages = ["Users", "Settings"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
-const notifications = ["New Users Signed Up", "Login Anomalies Detected"];
-
+// ----------------- Types ---------------------
 type ResponsiveAppBarProps = {
   onTabChange?: (tabName: string) => void;
 };
 
+// ----------------- Component ---------------------
+const pages = ["Users", "Settings"];
+const settings = ["Profile", "Account", "Dashboard", "Logout"];
+
+const initialNotifications: NotificationItem[] = [
+  { id: 1, message: "Brigid Dawson signed up", read: false },
+  { id: 2, message: "John Dwyer has logged in at an unusual time", read: false },
+  { id: 3, message: "Tim Hellman signed up", read: true },
+  { id: 5, message: "Shannon Shaw has logged in from a different location than usual", read: true },
+];
+
 function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
-  const [anchorElNotifications, setAnchorElNotifications] =
-    React.useState<null | HTMLElement>(null);
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>(initialNotifications);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
+
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
-  const handleOpenNotificationsMenu = (
-    event: React.MouseEvent<HTMLElement>
-  ) => {
+
+  const handleOpenNotificationsMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNotifications(event.currentTarget);
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+  const handleCloseNavMenu = () => setAnchorElNav(null);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
+  const handleCloseNotificationsMenu = () => setAnchorElNotifications(null);
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  const handleCloseNotificationsMenu = () => {
-    setAnchorElNotifications(null);
+  const handleNotificationClick = (id: number) => {
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      )
+    );
+    handleCloseNotificationsMenu();
   };
 
   return (
     <AppBar position="static" color="primary">
       <Container maxWidth={false}>
         <Toolbar disableGutters>
+          {/* Desktop Logo */}
           <Typography
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="#"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -83,10 +92,11 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             AuthicaAi
           </Typography>
 
+          {/* Mobile Menu Icon */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
-              aria-label="account of current user"
+              aria-label="menu"
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleOpenNavMenu}
@@ -97,31 +107,29 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             <Menu
               id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                <MenuItem key={page} onClick={() => {
+                  handleCloseNavMenu();
+                  onTabChange?.(page);
+                }}>
+                  <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
+
+          {/* Mobile Logo */}
           <Typography
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="#"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -139,13 +147,15 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             />
             AuthicaAi
           </Typography>
+
+          {/* Desktop Menu Buttons */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
                 key={page}
                 onClick={() => {
                   handleCloseNavMenu();
-                  onTabChange?.(page); 
+                  onTabChange?.(page);
                 }}
                 sx={{
                   my: 2,
@@ -160,68 +170,60 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
               </Button>
             ))}
           </Box>
+
+          {/* Notifications and Avatar */}
           <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
             <Tooltip title="View notifications">
               <IconButton
                 onClick={handleOpenNotificationsMenu}
                 sx={{ p: 0, mr: 2, color: "inherit" }}
               >
-                <NotificationsIcon />
+                <Badge
+                  color="error"
+                  variant={unreadCount > 0 ? "dot" : "standard"}
+                  overlap="circular"
+                >
+                  <NotificationsIcon />
+                </Badge>
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: "45px" }}
-              id="menu-notifications"
               anchorEl={anchorElNotifications}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
               open={Boolean(anchorElNotifications)}
               onClose={handleCloseNotificationsMenu}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+              sx={{ mt: "45px" }}
             >
-              {notifications.map((notification) => (
-                <MenuItem
-                  key={notification}
-                  onClick={handleCloseNotificationsMenu}
-                >
-                  <Typography sx={{ textAlign: "center" }}>
-                    {notification}
-                  </Typography>
-                </MenuItem>
-              ))}
+              <NotificationsList
+                notifications={notifications}
+                onItemClick={(id) => {
+                  setNotifications((prev) =>
+                    prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+                  );
+                  handleCloseNotificationsMenu();
+                }}
+              />
             </Menu>
+
+            {/* User Avatar */}
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="Admin Avatar" src="/static/images/avatar/2.jpg" />
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: "45px" }}
               id="menu-appbar"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
+              sx={{ mt: "45px" }}
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: "center" }}>
-                    {setting}
-                  </Typography>
+                  <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -231,4 +233,5 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
     </AppBar>
   );
 }
+
 export default ResponsiveAppBar;

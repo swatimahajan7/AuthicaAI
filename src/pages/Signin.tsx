@@ -98,7 +98,7 @@ const Signin = () => {
                                 overflowY: 'scroll',
                             }}
                         >
-                            <img src='../src/assets/ACL-logo.svg' width={200} className='logo' />
+                            <img src='../src/assets/logo.svg' width={200} className='logo' />
 
                             {activeStep === AuthMethods.usernamePassword && (
                                 <SigninForm ref={signinFormRef} />
