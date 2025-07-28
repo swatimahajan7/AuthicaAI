@@ -129,8 +129,8 @@ const Dashboard = () => {
       field: 'signupDate',
       headerName: 'Signup Date',
       flex: 1,
-      type: 'date',
-      valueGetter: (params: any) => new Date(params.value),
+      // type: 'date',
+      // valueGetter: (params: any) => new Date(params.value),
     },
     {
       field: 'status',

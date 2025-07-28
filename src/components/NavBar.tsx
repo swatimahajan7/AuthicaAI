@@ -89,7 +89,7 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
               alt="Company Logo"
               style={{ width: "auto", marginRight: "20px" }}
             />
-            AuthicaAi
+            AuthicaAI
           </Typography>
 
           {/* Mobile Menu Icon */}
@@ -145,7 +145,7 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
               alt="Company Logo"
               style={{ width: "auto", marginRight: "20px" }}
             />
-            AuthicaAi
+            AuthicaAI
           </Typography>
 
           {/* Desktop Menu Buttons */}
