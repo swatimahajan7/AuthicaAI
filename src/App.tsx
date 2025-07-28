@@ -4,6 +4,7 @@ import Signup from './pages/Signup'
 import Signin from './pages/Signin'
 import { SignupProvider } from './context/signupContext'
 import { SigninProvider } from './context/signinContext'
+import Dashboard from './pages/Dashboard'
 
 function App() {
 
@@ -15,7 +16,8 @@ function App() {
             <Route path="/" element={<Signin />} />
             <Route path="/signin" element={<Signin />} />
             <Route path="/signup" element={<Signup />} />
-          </Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
         </SigninProvider>
       </SignupProvider>
     </BrowserRouter>
