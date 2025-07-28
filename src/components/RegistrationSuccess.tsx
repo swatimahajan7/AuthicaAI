@@ -1,9 +1,11 @@
 import { Box, Typography, Button } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { useNavigate } from 'react-router';
 
 const RegistrationSuccess = () => {
+    const navigate = useNavigate()
     const handleProceed = () => {
-        // TODO: Navigate to dashboard/login/home or reset
+        navigate('/dashboard')
         console.log('Proceeding to application...');
     };
 

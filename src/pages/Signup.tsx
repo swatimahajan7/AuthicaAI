@@ -91,7 +91,7 @@ const Signup = () => {
                             borderRadius: '30px',
                             overflowY: "scroll"
                         }}>
-                            <img src='../src/assets/ACL-logo.svg' width={200} className='logo' />
+                            <img src='../src/assets/logo.svg' width={200} className='logo' />
                             {activeStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
                             {activeStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
                                 email={formValues.email}
