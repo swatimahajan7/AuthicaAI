@@ -1,21 +1,19 @@
-import { useRef, useState } from 'react'
-import StepperComponent from '../components/StepperComponent'
-import { AuthMethods, AuthSteps } from '../constants'
-import './Signup.css'
-import SignupForm, { type SignupFormHandle } from '../components/SignupForm'
+import { useRef, useState } from 'react';
+import StepperComponent from '../components/StepperComponent';
+import { AuthMethods, AuthSteps } from '../constants';
+import './Signup.css';
+import SignupForm, { type SignupFormHandle } from '../components/SignupForm';
 import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/AuthenticatorOTP';
 import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
-import { Button, Box } from '@mui/material'
-import { useSignupContext } from '../context/signupContext'
-import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition'
-import RegistrationSuccess from '../components/RegistrationSuccess'
+import { Button, Box } from '@mui/material';
+import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition';
+import RegistrationSuccess from '../components/RegistrationSuccess';
 
 const Signup = () => {
     const [activeStep, setActiveStep] = useState(AuthSteps[0]);
     const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
     const activeStepNumber = AuthSteps.indexOf(activeStep);
     const isAllStepsComplete = activeStep === "success";
-    const { formValues } = useSignupContext();
 
     const signupFormRef = useRef<SignupFormHandle>(null);
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
@@ -93,10 +91,7 @@ const Signup = () => {
                         }}>
                             <img src='../src/assets/logo.svg' width={200} className='logo' />
                             {activeStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                            {activeStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef}
-                                email={formValues.email}
-                                phone={formValues.phone}
-                                mode='signup' />}
+                            {activeStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef} mode='signup' />}
                             {activeStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode='signup' />}
                             {activeStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
                         </Box>
@@ -113,7 +108,6 @@ const Signup = () => {
                 ) : (
                     <RegistrationSuccess />
                 )}
-
             </div>
         </div>
     );
