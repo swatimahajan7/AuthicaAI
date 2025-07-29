@@ -1,46 +1,36 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Box, Button, Typography, TextField, Divider } from '@mui/material';
+import { useAuthContext } from '../context/globalAuthContext';
 
 export type EmailMobileOTPHandle = {
     isVerified: () => boolean;
 };
 
 interface EmailMobileOTPProps {
-    email: string;
-    phone: string;
     mode?: 'signup' | 'signin';
 }
 
-const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ email, phone, mode = 'signup' }, ref) => {
+const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ mode = 'signup' }, ref) => {
+    const { values, updateValues } = useAuthContext();
+
     const [emailCodeSent, setEmailCodeSent] = useState(mode === 'signin');
-    const [emailVerificationCode, setEmailVerificationCode] = useState('123123');
     const [emailInputCode, setEmailInputCode] = useState('');
     const [emailVerified, setEmailVerified] = useState(false);
     const [emailError, setEmailError] = useState('');
+    const [emailLocked, setEmailLocked] = useState(false);
 
     const [phoneCodeSent, setPhoneCodeSent] = useState(mode === 'signin');
-    const [phoneVerificationCode, setPhoneVerificationCode] = useState('123123');
     const [phoneInputCode, setPhoneInputCode] = useState('');
     const [phoneVerified, setPhoneVerified] = useState(false);
     const [phoneError, setPhoneError] = useState('');
+    const [phoneLocked, setPhoneLocked] = useState(false);
+
+    const emailVerificationCode = '123123';
+    const phoneVerificationCode = '123123';
 
     useImperativeHandle(ref, () => ({
         isVerified: () => emailVerified && phoneVerified,
     }));
-
-    const sendEmailCode = () => {
-        console.log(`${mode} email code: 123123`);
-        setEmailVerificationCode('123123');
-        setEmailCodeSent(true);
-        setEmailError('');
-    };
-
-    const sendPhoneCode = () => {
-        console.log(`${mode} phone code: 123123`);
-        setPhoneVerificationCode('123123');
-        setPhoneCodeSent(true);
-        setPhoneError('');
-    };
 
     const verifyEmail = () => {
         if (emailInputCode === emailVerificationCode) {
@@ -62,91 +52,139 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
 
     return (
         <Box display="flex" flexDirection="column" gap={4} mt={3}>
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography variant="h6">{mode === 'signin' ? 'Verify your email to sign in' : 'Verify your email'}</Typography>
-                <Typography>{email}</Typography>
+            {/* Email Section */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography variant="h6">
+                    {mode === 'signin' ? 'Verify your email to sign in' : 'Enter and verify your email'}
+                </Typography>
 
-                {!emailVerified ? (
+                {mode === 'signup' && (
+                    <TextField
+                        label="Email"
+                        value={values.email}
+                        onChange={(e) => updateValues({ email: e.target.value })}
+                        sx={{ mt: 2 }}
+                        disabled={emailCodeSent || emailVerified || emailLocked}
+                    />
+                )}
+
+                {emailCodeSent && !emailVerified && (
                     <>
-                        {emailCodeSent ? (
-                            <>
-                                {mode === 'signin' && (
-                                    <Typography variant="caption" sx={{ mt: 1 }}>
-                                        OTP has been sent to your registered email.
-                                    </Typography>
-                                )}
-                                <TextField
-                                    label="Enter Email Code"
-                                    value={emailInputCode}
-                                    onChange={(e) => setEmailInputCode(e.target.value)}
-                                    error={!!emailError}
-                                    helperText={emailError}
-                                    sx={{ my: 1 }}
-                                />
-                                <Box display="flex" gap={2} mt={1}>
-                                    {mode === 'signup' && (
-                                        <Button variant="outlined" onClick={sendEmailCode}>
-                                            Resend
-                                        </Button>
-                                    )}
-                                    <Button variant="contained" onClick={verifyEmail}>
-                                        Verify Email
-                                    </Button>
-                                </Box>
-                            </>
-                        ) : (
-                            <Button variant="contained" onClick={sendEmailCode} sx={{ mt: 1 }}>
-                                Send Email Code
-                            </Button>
+                        {mode === 'signin' && (
+                            <Typography variant="caption" sx={{ mt: 1 }}>
+                                OTP has been sent to your registered email.
+                            </Typography>
                         )}
+                        <TextField
+                            label="Enter Email Code"
+                            value={emailInputCode}
+                            onChange={(e) => setEmailInputCode(e.target.value)}
+                            error={!!emailError}
+                            helperText={emailError}
+                            sx={{ my: 1 }}
+                        />
+                        <Box display="flex" gap={2}>
+                            {mode === 'signup' && (
+                                <Button variant="outlined" onClick={() => setEmailCodeSent(true)}>
+                                    Resend
+                                </Button>
+                            )}
+                            <Button variant="contained" onClick={verifyEmail}>
+                                Verify Email
+                            </Button>
+                        </Box>
                     </>
-                ) : (
-                    <Typography color="green">Email verified</Typography>
+                )}
+
+                {!emailCodeSent && !emailVerified && (
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            console.log(`${mode} email code: ${emailVerificationCode}`);
+                            setEmailCodeSent(true);
+                            setEmailError('');
+                            setEmailLocked(true);
+                        }}
+                        sx={{ mt: 1 }}
+                        disabled={!values.email}
+                    >
+                        Send Email Code
+                    </Button>
+                )}
+
+                {emailVerified && (
+                    <Typography color="green" sx={{ mt: 1 }}>
+                        Email verified
+                    </Typography>
                 )}
             </Box>
 
             <Divider />
 
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography variant="h6">{mode === 'signin' ? 'Verify your mobile to sign in' : 'Verify your mobile'}</Typography>
-                <Typography>{phone}</Typography>
+            {/* Phone Section */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography variant="h6">
+                    {mode === 'signin' ? 'Verify your mobile to sign in' : 'Enter and verify your mobile'}
+                </Typography>
 
-                {!phoneVerified ? (
+                {mode === 'signup' && (
+                    <TextField
+                        label="Phone"
+                        value={values.phone}
+                        onChange={(e) => updateValues({ phone: e.target.value })}
+                        sx={{ mt: 2 }}
+                        disabled={phoneCodeSent || phoneVerified || phoneLocked}
+                    />
+                )}
+
+                {phoneCodeSent && !phoneVerified && (
                     <>
-                        {phoneCodeSent ? (
-                            <>
-                                {mode === 'signin' && (
-                                    <Typography variant="caption" sx={{ mt: 1 }}>
-                                        OTP has been sent to your registered mobile number.
-                                    </Typography>
-                                )}
-                                <TextField
-                                    label="Enter SMS Code"
-                                    value={phoneInputCode}
-                                    onChange={(e) => setPhoneInputCode(e.target.value)}
-                                    error={!!phoneError}
-                                    helperText={phoneError}
-                                    sx={{ my: 1 }}
-                                />
-                                <Box display="flex" gap={2} mt={1}>
-                                    {mode === 'signup' && (
-                                        <Button variant="outlined" onClick={sendPhoneCode}>
-                                            Resend
-                                        </Button>
-                                    )}
-                                    <Button variant="contained" onClick={verifyPhone}>
-                                        Verify Phone
-                                    </Button>
-                                </Box>
-                            </>
-                        ) : (
-                            <Button variant="contained" onClick={sendPhoneCode} sx={{ mt: 1 }}>
-                                Send SMS Code
-                            </Button>
+                        {mode === 'signin' && (
+                            <Typography variant="caption" sx={{ mt: 1 }}>
+                                OTP has been sent to your registered mobile number.
+                            </Typography>
                         )}
+                        <TextField
+                            label="Enter SMS Code"
+                            value={phoneInputCode}
+                            onChange={(e) => setPhoneInputCode(e.target.value)}
+                            error={!!phoneError}
+                            helperText={phoneError}
+                            sx={{ my: 1 }}
+                        />
+                        <Box display="flex" gap={2}>
+                            {mode === 'signup' && (
+                                <Button variant="outlined" onClick={() => setPhoneCodeSent(true)}>
+                                    Resend
+                                </Button>
+                            )}
+                            <Button variant="contained" onClick={verifyPhone}>
+                                Verify Phone
+                            </Button>
+                        </Box>
                     </>
-                ) : (
-                    <Typography color="green">Mobile verified</Typography>
+                )}
+
+                {!phoneCodeSent && !phoneVerified && (
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            console.log(`${mode} phone code: ${phoneVerificationCode}`);
+                            setPhoneCodeSent(true);
+                            setPhoneError('');
+                            setPhoneLocked(true);
+                        }}
+                        sx={{ mt: 1 }}
+                        disabled={!values.phone}
+                    >
+                        Send SMS Code
+                    </Button>
+                )}
+
+                {phoneVerified && (
+                    <Typography color="green" sx={{ mt: 1 }}>
+                        Mobile verified
+                    </Typography>
                 )}
             </Box>
         </Box>

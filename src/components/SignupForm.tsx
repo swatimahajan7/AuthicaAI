@@ -3,14 +3,17 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { forwardRef, useImperativeHandle } from 'react';
 import CustomTextField from './CustomTextField';
-import './SignupForm.css'
-import { useSignupContext } from '../context/signupContext';
+import './SignupForm.css';
+import { useAuthContext } from '../context/globalAuthContext';
+import { useNavigate } from 'react-router';
 
 const validationSchema = Yup.object({
+    name: Yup.string().required('Name is required'),
     username: Yup.string().required('Username is required'),
     password: Yup.string().min(6, 'Min 6 characters').required('Password is required'),
-    email: Yup.string().email('Invalid email').required('Email is required'),
-    phone: Yup.string().matches(/^[0-9]{10}$/, 'Phone must be 10 digits').required('Phone is required'),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], 'Passwords must match')
+        .required('Confirm Password is required'),
 });
 
 export type SignupFormHandle = {
@@ -18,11 +21,13 @@ export type SignupFormHandle = {
     getValues: () => typeof validationSchema.__outputType;
 };
 
-const SignupForm = forwardRef<SignupFormHandle>((props, ref) => {
-    const { formValues, updateFormValues } = useSignupContext();
+const SignupForm = forwardRef<SignupFormHandle>((_, ref) => {
+    const { values, updateValues } = useAuthContext();
+    const navigate = useNavigate()
+
     return (
         <Formik
-            initialValues={formValues}
+            initialValues={values}
             enableReinitialize
             validationSchema={validationSchema}
             validateOnMount
@@ -33,81 +38,43 @@ const SignupForm = forwardRef<SignupFormHandle>((props, ref) => {
                     validate: async () => {
                         const errors = await formik.validateForm();
                         formik.setTouched({
+                            name: true,
                             username: true,
                             password: true,
-                            email: true,
-                            phone: true,
+                            confirmPassword: true,
                         });
                         const isValid = Object.keys(errors).length === 0;
-                        if (isValid) {
-                            console.log(formik.values)
-                            updateFormValues(formik.values);
-                        }
+                        if (isValid) updateValues(formik.values);
                         return isValid;
                     },
                     getValues: () => formik.values,
                 }));
 
                 return (
-                    <Form className='signup-form'>
-                        <Box sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                            marginTop: 3
-                        }}>
-                            <Typography variant="h6" className='signup-form-title'>Create your account</Typography>
+                    <Form className="signup-form">
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+                            <Typography variant="h6" className="signup-form-title">
+                                Create your account
+                            </Typography>
 
-                            <Box sx={{
-                                width: "50%",
-                                alignSelf: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2
-                            }}>
-                                <CustomTextField
-                                    label="Username"
-                                    name="username"
-                                    value={formik.values.username}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.username && Boolean(formik.errors.username)}
-                                    helperText={formik.touched.username && formik.errors.username}
-                                />
-
-                                <CustomTextField
-                                    label="Password"
-                                    name="password"
-                                    type="password"
-                                    value={formik.values.password}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.password && Boolean(formik.errors.password)}
-                                    helperText={formik.touched.password && formik.errors.password}
-                                />
-
-                                <CustomTextField
-                                    label="Email"
-                                    name="email"
-                                    type="email"
-                                    value={formik.values.email}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.email && Boolean(formik.errors.email)}
-                                    helperText={formik.touched.email && formik.errors.email}
-                                />
-
-                                <CustomTextField
-                                    label="Phone Number"
-                                    name="phone"
-                                    type="tel"
-                                    value={formik.values.phone}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.phone && Boolean(formik.errors.phone)}
-                                    helperText={formik.touched.phone && formik.errors.phone}
-                                />
+                            <Box
+                                sx={{
+                                    width: '50%',
+                                    alignSelf: 'center',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                }}
+                            >
+                                <CustomTextField {...formik.getFieldProps('name')} label="Name" error={formik.touched.name && Boolean(formik.errors.name)} helperText={formik.touched.name && formik.errors.name} />
+                                <CustomTextField {...formik.getFieldProps('username')} label="Username" error={formik.touched.username && Boolean(formik.errors.username)} helperText={formik.touched.username && formik.errors.username} />
+                                <CustomTextField {...formik.getFieldProps('password')} label="Password" type="password" error={formik.touched.password && Boolean(formik.errors.password)} helperText={formik.touched.password && formik.errors.password} />
+                                <CustomTextField {...formik.getFieldProps('confirmPassword')} label="Confirm Password" type="password" error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)} helperText={formik.touched.confirmPassword && formik.errors.confirmPassword} />
                             </Box>
+
+                            <Typography variant="body1" className='reroute-text'>
+                                Already have and account? <a className={'reroute-link'} onClick={() => navigate('/signin')}>Sign-in</a>
+                            </Typography>
                         </Box>
                     </Form>
                 );

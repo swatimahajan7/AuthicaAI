@@ -2,30 +2,36 @@ import { forwardRef, useImperativeHandle } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import CustomTextField from './CustomTextField';
-import { Box } from '@mui/material';
-import { useSigninContext } from '../context/signinContext';
+import { Box, Typography } from '@mui/material';
+import { useAuthContext } from '../context/globalAuthContext';
+import './SigninForm.css'
+import { useNavigate } from 'react-router';
 
 export interface SigninFormHandle {
     validate: () => Promise<boolean>;
 }
 
 const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
-    const { signinValues, setSigninValues } = useSigninContext();
+    const { values, updateValues } = useAuthContext();
+    const navigate = useNavigate();
 
     const formik = useFormik({
-        initialValues: signinValues,
+        initialValues: {
+            username: values.username,
+            password: values.password,
+        },
         validationSchema: Yup.object({
             username: Yup.string().required('Username is required'),
             password: Yup.string().required('Password is required'),
         }),
-        onSubmit: () => { }
+        onSubmit: () => { },
     });
 
     useImperativeHandle(ref, () => ({
         async validate() {
-            const valid = await formik.validateForm();
-            if (Object.keys(valid).length === 0) {
-                setSigninValues(formik.values);
+            const errors = await formik.validateForm();
+            if (Object.keys(errors).length === 0) {
+                updateValues(formik.values);
                 return true;
             }
             formik.setTouched({
@@ -33,7 +39,7 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
                 password: true,
             });
             return false;
-        }
+        },
     }));
 
     return (
@@ -43,6 +49,7 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
                 label="Username"
                 value={formik.values.username}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 error={formik.touched.username && Boolean(formik.errors.username)}
                 helperText={formik.touched.username && formik.errors.username}
             />
@@ -52,9 +59,14 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
                 type="password"
                 value={formik.values.password}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 error={formik.touched.password && Boolean(formik.errors.password)}
                 helperText={formik.touched.password && formik.errors.password}
             />
+
+            <Typography variant="body1" className='reroute-text'>
+                No account? Register here <a className={'reroute-link'} onClick={() => navigate('/signup')}>Sign-up</a>
+            </Typography>
         </Box>
     );
 });
