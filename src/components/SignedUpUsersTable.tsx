@@ -17,7 +17,7 @@ const Dashboard = () => {
       email: 'john.doe@example.com',
       signupDate: '2024-01-15',
       status: 'Active',
-      'severity level': 'Low'
+      'risk': 'Medium'
     },
     {
       id: 2,
@@ -25,7 +25,7 @@ const Dashboard = () => {
       email: 'sarah.j@example.com',
       signupDate: '2024-02-03',
       status: 'Active',
-      'severity level': 'Medium'
+      'risk': 'Medium'
     },
     {
       id: 3,
@@ -33,7 +33,7 @@ const Dashboard = () => {
       email: 'mike.chen@example.com',
       signupDate: '2024-02-18',
       status: 'Inactive',
-      'severity level': 'High'
+      'risk': 'High'
     },
     {
       id: 4,
@@ -41,7 +41,7 @@ const Dashboard = () => {
       email: 'emily.r@example.com',
       signupDate: '2024-03-02',
       status: 'Active',
-      'severity level': 'Very high'
+      'risk': 'Severe'
     },
     {
       id: 5,
@@ -49,7 +49,7 @@ const Dashboard = () => {
       email: 'david.kim@example.com',
       signupDate: '2024-03-15',
       status: 'Pending',
-      'severity level': 'Medium'
+      'risk': 'Medium'
     }
   ]);
 
@@ -59,7 +59,7 @@ const Dashboard = () => {
     email: string;
     signupDate: string;
     status: 'Active' | 'Inactive' | 'Pending' | string;
-    'severity level': 'Low' | 'Medium' | 'High' | 'Very high' | string;
+    'risk': 'Severe' | 'Medium' | 'High'  | string;
   }
 
   const getStatusColor = (status: User['status']): 'success' | 'error' | 'warning' | 'default' => {
@@ -75,31 +75,25 @@ const Dashboard = () => {
     }
   };
 
-  const getSeverityStyles = (severity: string) => {
+  const getRiskStyles = (severity: string) => {
     switch (severity.toLowerCase()) {
-      case 'low':
+      case 'medium':
         return {
           backgroundColor: '#ffebee',
           color: '#c62828',
-          border: '1px solid #ef9a9a',
-        };
-      case 'medium':
-        return {
-          backgroundColor: '#e57373',
-          color: '#ffffff',
-          border: '1px solid #f44336',
+          border: '1px solid #ef9a9a'
         };
       case 'high':
         return {
+          backgroundColor: '#e57373',
+          color: '#ffffff',
+          border: '1px solid #f44336'
+        };
+      case 'severe':
+        return {
           backgroundColor: '#c62828',
           color: '#ffffff',
-          border: '1px solid #b71c1c',
-        };
-      case 'very high':
-        return {
-          backgroundColor: '#b71c1c',
-          color: '#ffffff',
-          border: '1px solid #880e4f',
+          border: '1px solid #b71c1c'
         };
       default:
         return {
@@ -163,12 +157,12 @@ const Dashboard = () => {
       ),
     },
     {
-      field: 'severity level',
-      headerName: 'Severity Level',
+      field: 'risk',
+      headerName: 'Risk',
       flex: 1,
       editable: true,
       type: 'singleSelect',
-      valueOptions: ['Low', 'Medium', 'High', 'Very high'],
+      valueOptions: [ 'Medium', 'High', 'Severe'],
       renderCell: (params: any) => (
         <Chip
           label={params.value}
@@ -177,7 +171,7 @@ const Dashboard = () => {
           sx={{
             textTransform: 'capitalize',
             fontWeight: 500,
-            ...getSeverityStyles(params.value),
+            ...getRiskStyles(params.value),
           }}
         />
       ),
