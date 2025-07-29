@@ -5,9 +5,8 @@ import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/Aut
 import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition';
 import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
 import { Button, Box } from '@mui/material';
-import { useSigninContext } from '../context/signinContext';
 import SigninSuccess from '../components/SigninSuccess';
-import './Signin.css'
+import './Signin.css';
 import SigninForm, { type SigninFormHandle } from '../components/SigninForm';
 
 const Signin = () => {
@@ -15,8 +14,6 @@ const Signin = () => {
     const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
     const activeStepNumber = AuthSteps.indexOf(activeStep);
     const isAllStepsComplete = activeStep === 'success';
-
-    const { signinValues } = useSigninContext();
 
     const signinFormRef = useRef<SigninFormHandle>(null);
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
@@ -105,12 +102,7 @@ const Signin = () => {
                             )}
 
                             {activeStep === AuthMethods.emailMobileOTP && (
-                                <EmailMobileOTP
-                                    ref={emailOtpRef}
-                                    email={signinValues.email}
-                                    phone={signinValues.phone}
-                                    mode='signin'
-                                />
+                                <EmailMobileOTP ref={emailOtpRef} mode='signin' />
                             )}
 
                             {activeStep === AuthMethods.authenticatorOTP && (

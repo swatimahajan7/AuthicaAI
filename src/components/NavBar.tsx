@@ -15,13 +15,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Badge from "@mui/material/Badge";
 import logo from "../assets/logo.svg";
 import { NotificationsList, type NotificationItem } from "./NotificationsList";
+import { useNavigate } from "react-router";
 
 type ResponsiveAppBarProps = {
   onTabChange?: (tabName: string) => void;
 };
 
 const pages = ["Users", "Settings"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const settings = ["Logout"];
 
 const initialNotifications: NotificationItem[] = [
   { id: 1, message: "Brigid Dawson signed up", read: false },
@@ -35,6 +36,8 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>(initialNotifications);
+
+  const navigate = useNavigate();
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -215,7 +218,7 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
               sx={{ mt: "45px" }}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={() => navigate('/signin')}>
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
