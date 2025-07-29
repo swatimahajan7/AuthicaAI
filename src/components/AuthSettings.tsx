@@ -34,21 +34,21 @@ const SeverityAuthTable = () => {
   const [severityLevels, setSeverityLevels] = useState([
     {
       id: 1,
-      name: 'Low',
-      class: 'low',
-      auth: ['Username & Password']
+      name: 'Medium',
+      class: 'medium',
+      auth: ['Basic Authentication']
     },
     {
       id: 2,
-      name: 'Medium',
-      class: 'medium',
-      auth: ['Username & Password', 'Phone OTP']
+      name: 'High',
+      class: 'high',
+      auth: ['Basic Authentication', 'Phone OTP']
     },
     {
       id: 3,
-      name: 'High',
-      class: 'high',
-      auth: ['Username & Password', 'Phone OTP', 'Email OTP']
+      name: 'Severe',
+      class: 'severe',
+      auth: ['Basic Authentication', 'Phone OTP', 'Email OTP']
     }
   ]);
 
@@ -56,32 +56,33 @@ const SeverityAuthTable = () => {
   const [editingSeverity, setEditingSeverity] = useState<any>(null);
   const [newSeverityName, setNewSeverityName] = useState('');
   const [selectedAuthMethods, setSelectedAuthMethods] = useState<any>([]);
-  const [customAuthMethod, setCustomAuthMethod] = useState('');
 
   const authOptions = useMemo(() => [
-    { id: 'username-password', label: 'Username & Password', icon: <LockIcon /> },
+    { id: 'basic-auth', label: 'Basic Authentication', icon: <LockIcon /> },
     { id: 'phone-otp', label: 'Phone OTP', icon: <PhoneIcon /> },
     { id: 'email-otp', label: 'Email OTP', icon: <EmailIcon /> },
-    { id: 'biometric', label: 'Biometric Authentication', icon: <FingerprintIcon /> },
-    { id: 'hardware-token', label: 'Hardware Token (2FA)', icon: <SecurityIcon /> }
+    { id: 'face-recognition', label: 'Face Recognition', icon: <FingerprintIcon /> },
+    { id: 'mfa', label: 'MFA (Multifactor Auth)', icon: <SecurityIcon /> }
   ], []);
 
   const getAuthIcon = useCallback((authMethod: any) => {
     const method = authMethod.toLowerCase();
-    if (method.includes('username') && method.includes('password')) return <LockIcon />;
+    if (method.includes('basic')) return <LockIcon />;
     if (method.includes('phone')) return <PhoneIcon />;
     if (method.includes('email')) return <EmailIcon />;
-    if (method.includes('biometric')) return <FingerprintIcon />;
-    if (method.includes('token') || method.includes('2fa')) return <SecurityIcon />;
+    if (method.includes('face')) return <FingerprintIcon />;
+    if (method.includes('mfa') || method.includes('multifactor')) return <SecurityIcon />;
     return <SecurityIcon />;
   }, []);
 
   const getSeverityClass = (name: string) => {
     const lowerName = name.toLowerCase();
-    if (lowerName.includes('low') || lowerName.includes('minimal')) {
-      return 'low';
-    } else if (lowerName.includes('high') || lowerName.includes('critical') || lowerName.includes('severe')) {
+    if (lowerName.includes('medium')) {
+      return 'medium';
+    } else if (lowerName.includes('high')) {
       return 'high';
+    } else if (lowerName.includes('severe') || lowerName.includes('critical')) {
+      return 'severe';
     } else {
       return 'medium';
     }
@@ -89,19 +90,19 @@ const SeverityAuthTable = () => {
 
   const getSeverityChipStyles = useCallback((severity: string) => {
     switch (severity) {
-      case 'low':
+      case 'medium':
         return {
           backgroundColor: '#ffebee',
           color: '#c62828',
           border: '1px solid #ef9a9a'
         };
-      case 'medium':
+      case 'high':
         return {
           backgroundColor: '#e57373',
           color: '#ffffff',
           border: '1px solid #f44336'
         };
-      case 'high':
+      case 'severe':
         return {
           backgroundColor: '#c62828',
           color: '#ffffff',
@@ -124,12 +125,6 @@ const SeverityAuthTable = () => {
     );
   }, []);
 
-  const handleAddSeverity = () => {
-    setEditingSeverity(null);
-    clearForm();
-    setDialogOpen(true);
-  };
-
   const handleEditSeverity = (severity: any) => {
     setEditingSeverity(severity);
     setNewSeverityName(severity.name);
@@ -143,7 +138,6 @@ const SeverityAuthTable = () => {
     });
 
     setSelectedAuthMethods(mappedAuthMethods);
-    setCustomAuthMethod('');
     setDialogOpen(true);
   };
 
@@ -159,58 +153,27 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    let finalAuthMethods = [...selectedAuthMethods];
-
-    if (customAuthMethod.trim()) {
-      finalAuthMethods.push('custom-' + Date.now());
-    }
-
-    if (finalAuthMethods.length === 0) {
-      alert('Please select at least one authentication method or add a custom one');
+    if (selectedAuthMethods.length === 0) {
+      alert('Please select at least one authentication method');
       return;
     }
 
-    const nameExists = severityLevels.some(level =>
-      level.name.toLowerCase() === newSeverityName.toLowerCase() &&
-      (!editingSeverity || level.id !== editingSeverity.id)
-    );
-
-    if (nameExists) {
-      alert('This severity level already exists');
-      return;
-    }
-
-    const authMethods = finalAuthMethods.map((methodId: any) => {
-      if (methodId.startsWith('custom-')) {
-        return customAuthMethod.trim();
-      }
+    const authMethods = selectedAuthMethods.map((methodId: any) => {
       const option = authOptions.find(opt => opt.id === methodId);
       return option ? option.label : methodId;
     });
 
-    if (editingSeverity) {
-      setSeverityLevels(prev => prev.map(level =>
-        level.id === editingSeverity.id
-          ? {
-            ...level,
-            name: newSeverityName,
-            class: getSeverityClass(newSeverityName),
-            auth: authMethods
-          }
-          : level
-      ));
-      alert(`Successfully updated "${newSeverityName}" severity level.`);
-    } else {
-      const newLevel = {
-        id: Date.now(),
-        name: newSeverityName,
-        class: getSeverityClass(newSeverityName),
-        auth: authMethods
-      };
-
-      setSeverityLevels(prev => [...prev, newLevel]);
-      alert(`Successfully added "${newSeverityName}" severity level with ${finalAuthMethods.length} authentication method(s).`);
-    }
+    setSeverityLevels(prev => prev.map(level =>
+      level.id === editingSeverity.id
+        ? {
+          ...level,
+          name: newSeverityName,
+          class: getSeverityClass(newSeverityName),
+          auth: authMethods
+        }
+        : level
+    ));
+    alert(`Successfully updated "${newSeverityName}" risk level.`);
 
     handleCloseDialog();
   };
@@ -218,7 +181,6 @@ const SeverityAuthTable = () => {
   const clearForm = () => {
     setNewSeverityName('');
     setSelectedAuthMethods([]);
-    setCustomAuthMethod('');
   };
 
   const handleCloseDialog = () => {
@@ -230,7 +192,7 @@ const SeverityAuthTable = () => {
   const columns: GridColDef[] = useMemo(() => [
     {
       field: 'severityLevel',
-      headerName: 'Severity Level',
+      headerName: 'Risk Level',
       flex: 1,
       headerAlign: 'center',
       align: 'center',
@@ -317,12 +279,13 @@ const SeverityAuthTable = () => {
     <>
       <TextField
         fullWidth
-        label="Severity Level Name"
-        placeholder="Enter severity level (e.g., Critical, Very High)"
+        label="Risk Level Name"
+        placeholder="Enter risk level: Medium, High, or Severe"
         value={newSeverityName}
         onChange={(e) => setNewSeverityName(e.target.value)}
         sx={{ mb: 3, mt: 1 }}
         variant="outlined"
+        helperText="Only Medium, High, and Severe are allowed"
       />
 
       <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
@@ -358,30 +321,13 @@ const SeverityAuthTable = () => {
           />
         ))}
       </FormGroup>
-
-      <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'medium', mt: 2 }}>
-        Add Custom Authentication Method (Optional)
-      </Typography>
-
-      <TextField
-        fullWidth
-        label="Custom Authentication Method"
-        placeholder="Enter custom authentication method (e.g., Smart Card, Voice Recognition)"
-        value={customAuthMethod}
-        onChange={(e) => setCustomAuthMethod(e.target.value)}
-        multiline
-        rows={2}
-        sx={{ mb: 3 }}
-        variant="outlined"
-        helperText="Describe any additional authentication method not listed above"
-      />
     </>
   );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        Severity Level Authentication Configuration
+        Risk Level Authentication Configuration
       </Typography>
 
       <DataGrid
@@ -403,19 +349,6 @@ const SeverityAuthTable = () => {
         }}
       />
 
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleAddSeverity}
-        sx={{
-          mb: 2,
-          transition: 'all 0.3s ease'
-        }}
-      >
-        Add Auth and Severity
-      </Button>
-
       <Dialog
         open={dialogOpen}
         onClose={handleCloseDialog}
@@ -424,8 +357,8 @@ const SeverityAuthTable = () => {
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {editingSeverity ? <EditIcon color="primary" sx={{ mr: 1 }} /> : <AddIcon color="primary" sx={{ mr: 1 }} />}
-            {editingSeverity ? 'Edit Severity Level' : 'Add New Severity Level'}
+            <EditIcon color="primary" sx={{ mr: 1 }} />
+            Edit Risk Level
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -439,9 +372,9 @@ const SeverityAuthTable = () => {
             onClick={handleSaveSeverity}
             variant="contained"
             color="primary"
-            startIcon={editingSeverity ? <EditIcon /> : <AddIcon />}
+            startIcon={<EditIcon />}
           >
-            {editingSeverity ? 'Update Severity Level' : 'Add Severity Level'}
+            Update Risk Level
           </Button>
         </DialogActions>
       </Dialog>
