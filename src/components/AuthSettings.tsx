@@ -29,8 +29,11 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import { useAuthContext } from '../context/globalAuthContext';
 
 const SeverityAuthTable = () => {
+  const { riskConfig, setRiskConfig, users, setUsers } = useAuthContext();
+
   const [severityLevels, setSeverityLevels] = useState([
     {
       id: 1,
@@ -153,28 +156,37 @@ const SeverityAuthTable = () => {
       return;
     }
 
-    if (selectedAuthMethods.length === 0) {
-      alert('Please select at least one authentication method');
-      return;
-    }
-
-    const authMethods = selectedAuthMethods.map((methodId: any) => {
-      const option = authOptions.find(opt => opt.id === methodId);
-      return option ? option.label : methodId;
-    });
-
-    setSeverityLevels(prev => prev.map(level =>
-      level.id === editingSeverity.id
+    const updatedRiskConfig = riskConfig.map(config =>
+      config.risk === newSeverityName
         ? {
-          ...level,
-          name: newSeverityName,
-          class: getSeverityClass(newSeverityName),
-          auth: authMethods
+          ...config,
+          authMethods: selectedAuthMethods.map((methodId: any) => {
+            const option = authOptions.find(opt => opt.id === methodId);
+            return option ? option.label : methodId;
+          }),
+          requireEmailOTP: selectedAuthMethods.includes('email-otp'),
+          requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
         }
-        : level
-    ));
-    alert(`Successfully updated "${newSeverityName}" risk level.`);
+        : config
+    );
 
+    setRiskConfig(updatedRiskConfig);
+
+    // Update all users with this risk level
+    setUsers(prev =>
+      prev.map(user =>
+        user.risk === newSeverityName
+          ? {
+            ...user,
+            authMethods: updatedRiskConfig.find(c => c.risk === newSeverityName)!.authMethods,
+            requireEmailOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requireEmailOTP,
+            requirePhoneOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requirePhoneOTP,
+          }
+          : user
+      )
+    );
+
+    alert(`Successfully updated "${newSeverityName}" risk level.`);
     handleCloseDialog();
   };
 

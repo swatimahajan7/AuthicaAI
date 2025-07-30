@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import { AuthMethods } from '../constants';
 
 export interface AuthFormValues {
   name: string;
@@ -9,10 +10,42 @@ export interface AuthFormValues {
   phone: string;
 }
 
+export interface RiskConfig {
+  risk: 'Medium' | 'High' | 'Severe';
+  authMethods: string[];
+  requireEmailOTP: boolean;
+  requirePhoneOTP: boolean;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  username: string;
+  password: string;
+  email: string;
+  phone: string;
+  risk: 'Medium' | 'High' | 'Severe';
+  authMethods: string[];
+  requireEmailOTP?: boolean;
+  requirePhoneOTP?: boolean;
+}
+
 interface AuthContextType {
   values: AuthFormValues;
   updateValues: (values: Partial<AuthFormValues>) => void;
+  users: User[];
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  riskConfig: RiskConfig[];
+  setRiskConfig: React.Dispatch<React.SetStateAction<RiskConfig[]>>;
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
 }
+
+const defaultRiskConfig: RiskConfig[] = [
+  { risk: 'Medium', authMethods: [AuthMethods.usernamePassword], requireEmailOTP: false, requirePhoneOTP: false },
+  { risk: 'High', authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP], requireEmailOTP: true, requirePhoneOTP: false },
+  { risk: 'Severe', authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP], requireEmailOTP: true, requirePhoneOTP: true },
+];
 
 const defaultValues: AuthFormValues = {
   name: '',
@@ -23,17 +56,83 @@ const defaultValues: AuthFormValues = {
   phone: '',
 };
 
+const mockUsers: User[] = [
+  {
+    id: 1,
+    name: 'John Doe',
+    username: 'john_doe',
+    password: 'pass123',
+    email: 'john.doe@example.com',
+    phone: '9876543210',
+    risk: 'Medium',
+    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    requireEmailOTP: false,
+    requirePhoneOTP: true
+  },
+  {
+    id: 2,
+    name: 'Sarah Johnson',
+    username: 'sarah_j',
+    password: 'pass123',
+    email: 'sarah.j@example.com',
+    phone: '9876543211',
+    risk: 'Medium',
+    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    requireEmailOTP: true,
+    requirePhoneOTP: false
+  },
+  {
+    id: 3,
+    name: 'Mike Chen',
+    username: 'mike_chen',
+    password: 'pass123',
+    email: 'mike.chen@example.com',
+    phone: '9876543212',
+    risk: 'High',
+    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP],
+    requireEmailOTP: true,
+    requirePhoneOTP: false
+  },
+  {
+    id: 4,
+    name: 'Emily Rodriguez',
+    username: 'emily_r',
+    password: 'pass123',
+    email: 'emily.r@example.com',
+    phone: '9876543213',
+    risk: 'Severe',
+    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP, AuthMethods.faceRecognition],
+    requireEmailOTP: true,
+    requirePhoneOTP: true
+  },
+  {
+    id: 5,
+    name: 'David Kim',
+    username: 'david_k',
+    password: 'pass123',
+    email: 'david.kim@example.com',
+    phone: '9876543214',
+    risk: 'Medium',
+    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    requireEmailOTP: false,
+    requirePhoneOTP: true
+  }
+];
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [values, setValues] = useState<AuthFormValues>(defaultValues);
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [riskConfig, setRiskConfig] = useState<RiskConfig[]>(defaultRiskConfig);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const updateValues = (newValues: Partial<AuthFormValues>) => {
     setValues((prev) => ({ ...prev, ...newValues }));
   };
 
   return (
-    <AuthContext.Provider value={{ values, updateValues }}>
+    <AuthContext.Provider value={{ values, updateValues, users, setUsers, riskConfig, setRiskConfig, currentUser, setCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

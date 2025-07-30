@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Container,
   Box,
@@ -7,51 +6,61 @@ import {
   Chip
 } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { useAuthContext } from '../context/globalAuthContext';
 
 const Dashboard = () => {
 
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      signupDate: '2024-01-15',
-      status: 'Active',
-      'risk': 'Medium'
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.j@example.com',
-      signupDate: '2024-02-03',
-      status: 'Active',
-      'risk': 'Medium'
-    },
-    {
-      id: 3,
-      name: 'Mike Chen',
-      email: 'mike.chen@example.com',
-      signupDate: '2024-02-18',
-      status: 'Inactive',
-      'risk': 'High'
-    },
-    {
-      id: 4,
-      name: 'Emily Rodriguez',
-      email: 'emily.r@example.com',
-      signupDate: '2024-03-02',
-      status: 'Active',
-      'risk': 'Severe'
-    },
-    {
-      id: 5,
-      name: 'David Kim',
-      email: 'david.kim@example.com',
-      signupDate: '2024-03-15',
-      status: 'Pending',
-      'risk': 'Medium'
-    }
-  ]);
+  const { users, setUsers, riskConfig } = useAuthContext();
+
+  const tableUsers = users.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    signupDate: '2024-01-15',
+    status: 'Active',
+    risk: user.risk
+  }));
+  //   {
+  //     id: 1,
+  //     name: 'John Doe',
+  //     email: 'john.doe@example.com',
+  //     signupDate: '2024-01-15',
+  //     status: 'Active',
+  //     'risk': 'Medium'
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Sarah Johnson',
+  //     email: 'sarah.j@example.com',
+  //     signupDate: '2024-02-03',
+  //     status: 'Active',
+  //     'risk': 'Medium'
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Mike Chen',
+  //     email: 'mike.chen@example.com',
+  //     signupDate: '2024-02-18',
+  //     status: 'Inactive',
+  //     'risk': 'High'
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Emily Rodriguez',
+  //     email: 'emily.r@example.com',
+  //     signupDate: '2024-03-02',
+  //     status: 'Active',
+  //     'risk': 'Severe'
+  //   },
+  //   {
+  //     id: 5,
+  //     name: 'David Kim',
+  //     email: 'david.kim@example.com',
+  //     signupDate: '2024-03-15',
+  //     status: 'Pending',
+  //     'risk': 'Medium'
+  //   }
+  // ]);
 
   interface User {
     id: number;
@@ -59,7 +68,7 @@ const Dashboard = () => {
     email: string;
     signupDate: string;
     status: 'Active' | 'Inactive' | 'Pending' | string;
-    'risk': 'Severe' | 'Medium' | 'High'  | string;
+    'risk': 'Severe' | 'Medium' | 'High' | string;
   }
 
   const getStatusColor = (status: User['status']): 'success' | 'error' | 'warning' | 'default' => {
@@ -104,9 +113,18 @@ const Dashboard = () => {
     }
   };
 
-  const handleRowUpdate = (newRow: User, oldRow: User) => {
+  const handleRowUpdate = (newRow: User) => {
+    const config = riskConfig.find(c => c.risk === newRow.risk as 'Medium' | 'High' | 'Severe');
     const updatedUsers = users.map(user =>
-      user.id === newRow.id ? { ...user, ...newRow } : user
+      user.id === newRow.id
+        ? {
+          ...user,
+          risk: newRow.risk as 'Medium' | 'High' | 'Severe',
+          authMethods: config?.authMethods || [],
+          requireEmailOTP: config?.requireEmailOTP || false,
+          requirePhoneOTP: config?.requirePhoneOTP || false,
+        }
+        : user
     );
     setUsers(updatedUsers);
     return newRow;
@@ -162,7 +180,7 @@ const Dashboard = () => {
       flex: 1,
       editable: true,
       type: 'singleSelect',
-      valueOptions: [ 'Medium', 'High', 'Severe'],
+      valueOptions: ['Medium', 'High', 'Severe'],
       renderCell: (params: any) => (
         <Chip
           label={params.value}
@@ -187,7 +205,7 @@ const Dashboard = () => {
 
         <Box sx={{ minHeight: 400, width: '100%' }}>
           <DataGrid
-            rows={users}
+            rows={tableUsers}
             columns={columns}
             processRowUpdate={handleRowUpdate}
             getRowId={(row) => row.id}
