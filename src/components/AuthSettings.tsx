@@ -29,8 +29,11 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import { useAuthContext } from '../context/globalAuthContext';
 
 const SeverityAuthTable = () => {
+  const { riskConfig, setRiskConfig, users, setUsers } = useAuthContext();
+
   const [severityLevels, setSeverityLevels] = useState([
     {
       id: 1,
@@ -153,6 +156,35 @@ const SeverityAuthTable = () => {
       return;
     }
 
+      const updatedRiskConfig = riskConfig.map(config =>
+      config.risk === newSeverityName
+        ? {
+          ...config,
+          authMethods: selectedAuthMethods.map((methodId: any) => {
+            const option = authOptions.find(opt => opt.id === methodId);
+            return option ? option.label : methodId;
+          }),
+          requireEmailOTP: selectedAuthMethods.includes('email-otp'),
+          requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
+        }
+        : config
+    );
+
+    setRiskConfig(updatedRiskConfig);
+
+    setUsers(prev =>
+      prev.map(user =>
+        user.risk === newSeverityName
+          ? {
+            ...user,
+            authMethods: updatedRiskConfig.find(c => c.risk === newSeverityName)!.authMethods,
+            requireEmailOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requireEmailOTP,
+            requirePhoneOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requirePhoneOTP,
+          }
+          : user
+      )
+    );
+
     if (selectedAuthMethods.length === 0) {
       alert('Please select at least one authentication method');
       return;
@@ -163,7 +195,7 @@ const SeverityAuthTable = () => {
       return option ? option.label : methodId;
     });
 
-  setSeverityLevels(prev => prev.map(level =>
+ setSeverityLevels(prev => prev.map(level =>
     level.id === editingSeverity.id
       ? {
           id: level.id,
@@ -174,7 +206,6 @@ const SeverityAuthTable = () => {
       : { ...level }
   ));
     alert(`Successfully updated "${newSeverityName}" risk level.`);
-
     handleCloseDialog();
   };
 

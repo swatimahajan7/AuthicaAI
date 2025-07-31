@@ -1,5 +1,6 @@
 .stepper-wrapper {
-    margin: 10px 20px
+    margin: 10px 20px;
+    justify-content: center;
 }
 
 .step-label .MuiStepLabel-iconContainer {

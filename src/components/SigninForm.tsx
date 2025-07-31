@@ -9,10 +9,11 @@ import { useNavigate } from 'react-router';
 
 export interface SigninFormHandle {
     validate: () => Promise<boolean>;
+    getValues: () => { username: string; password: string };
 }
 
 const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
-    const { values, updateValues } = useAuthContext();
+    const { values, updateValues, users, setCurrentUser } = useAuthContext();
     const navigate = useNavigate();
 
     const formik = useFormik({
@@ -31,14 +32,31 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
         async validate() {
             const errors = await formik.validateForm();
             if (Object.keys(errors).length === 0) {
-                updateValues(formik.values);
+                const matchedUser = users.find(
+                    (u) =>
+                        u.username === formik.values.username &&
+                        u.password === formik.values.password
+                );
+
+                console.log('Checking credentials:', formik.values);
+                console.log('Mock users:', users);
+
+                if (!matchedUser) {
+                    alert('Invalid username or password');
+                    return false;
+                }
+
+                setCurrentUser(matchedUser);
+                updateValues(matchedUser);
                 return true;
             }
-            formik.setTouched({
-                username: true,
-                password: true,
-            });
+
+            formik.setTouched({ username: true, password: true });
             return false;
+        },
+
+        getValues() {
+            return formik.values;
         },
     }));
 

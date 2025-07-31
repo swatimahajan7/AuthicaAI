@@ -11,3 +11,9 @@ export const AuthSteps = [
     AuthMethods.authenticatorOTP,
     AuthMethods.faceRecognition
 ]
+
+export const riskAuthMap = {
+    Medium: [AuthMethods.usernamePassword],
+    High: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    Severe: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP]
+};
