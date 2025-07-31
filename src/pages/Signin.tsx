@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import StepperComponent from '../components/StepperComponent';
-import { AuthSteps, AuthMethods } from '../constants';
+import { AuthMethods } from '../constants';
 import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/AuthenticatorOTP';
 import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition';
 import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
@@ -8,40 +9,50 @@ import { Button, Box } from '@mui/material';
 import SigninSuccess from '../components/SigninSuccess';
 import './Signin.css';
 import SigninForm, { type SigninFormHandle } from '../components/SigninForm';
+import { useAuthContext } from '../context/globalAuthContext';
 
 const Signin = () => {
-    const [activeStep, setActiveStep] = useState(AuthSteps[0]);
+    const { setCurrentUser, users } = useAuthContext();
+    const navigate = useNavigate();
+
+    const [steps, setSteps] = useState<string[]>([AuthMethods.usernamePassword]);
+    const [activeStepIndex, setActiveStepIndex] = useState(0);
     const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
-    const activeStepNumber = AuthSteps.indexOf(activeStep);
-    const isAllStepsComplete = activeStep === 'success';
+    const [isAllStepsComplete, setIsAllStepsComplete] = useState(false);
+
+    const activeStep = steps[activeStepIndex];
 
     const signinFormRef = useRef<SigninFormHandle>(null);
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
     const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
     const faceRef = useRef<FaceRecognitionHandle>(null);
 
-    const handleNext = () => {
-        const nextStep = AuthSteps[activeStepNumber + 1];
-        if (nextStep) {
-            setActiveStep(nextStep);
-        } else {
-            setCompleted((prev) => ({
-                ...prev,
-                [activeStepNumber]: true,
-            }));
-            setActiveStep('success');
+    const handleBack = () => {
+        if (activeStepIndex > 0) {
+            setActiveStepIndex((prev) => prev - 1);
         }
     };
 
-    const handleBack = () => {
-        const prevStep = AuthSteps[activeStepNumber - 1];
-        if (prevStep) setActiveStep(prevStep);
-    };
-
     const handleContinue = async () => {
+        if (isAllStepsComplete) {
+            navigate('/dashboard');
+            return;
+        }
+
         if (activeStep === AuthMethods.usernamePassword) {
             const isValid = await signinFormRef.current?.validate();
             if (!isValid) return;
+
+            const user = users.find(
+                (u) => u.username === signinFormRef.current?.getValues().username
+            );
+
+            if (user) {
+                setCurrentUser(user);
+                setSteps(user.authMethods);
+                setActiveStepIndex(1);
+                return;
+            }
         }
 
         if (activeStep === AuthMethods.emailMobileOTP) {
@@ -68,11 +79,16 @@ const Signin = () => {
             }
         }
 
-        setCompleted({
-            ...completed,
-            [activeStepNumber]: true,
-        });
-        handleNext();
+        setCompleted((prev) => ({
+            ...prev,
+            [activeStepIndex]: true,
+        }));
+
+        if (activeStepIndex < steps.length - 1) {
+            setActiveStepIndex((prev) => prev + 1);
+        } else {
+            setIsAllStepsComplete(true);
+        }
     };
 
     return (
@@ -81,8 +97,8 @@ const Signin = () => {
                 {!isAllStepsComplete ? (
                     <>
                         <StepperComponent
-                            steps={AuthSteps}
-                            activeStepNumber={activeStepNumber}
+                            steps={steps}
+                            activeStepNumber={activeStepIndex}
                             completed={completed}
                         />
 
@@ -115,7 +131,7 @@ const Signin = () => {
                         </Box>
 
                         <Box my={2} display='flex' justifyContent='space-between'>
-                            <Button variant='outlined' onClick={handleBack} disabled={activeStepNumber === 0}>
+                            <Button variant='outlined' onClick={handleBack} disabled={activeStepIndex === 0}>
                                 Back
                             </Button>
                             <Button variant='contained' onClick={handleContinue}>
