@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router';
 const SigninSuccess = () => {
     const navigate = useNavigate()
     const handleProceed = () => {
-        navigate('/dashboard')
+        if()
+        navigate('/userDashboard')
         console.log('Signed in successfully!');
     };
 
