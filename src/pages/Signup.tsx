@@ -8,6 +8,7 @@ import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMo
 import { Button, Box } from '@mui/material';
 import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition';
 import RegistrationSuccess from '../components/RegistrationSuccess';
+import { useAuthContext, type User } from '../context/globalAuthContext';
 
 const Signup = () => {
     const [activeStep, setActiveStep] = useState(AuthSteps[0]);
@@ -19,6 +20,8 @@ const Signup = () => {
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
     const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
     const faceRef = useRef<FaceRecognitionHandle>(null);
+
+    const { values, setUsers, currentUser, setCurrentUser, riskConfig } = useAuthContext();
 
     const handleNext = () => {
         const nextStep = AuthSteps[activeStepNumber + 1];
@@ -42,6 +45,26 @@ const Signup = () => {
         if (activeStep === AuthMethods.usernamePassword) {
             const isValid = await signupFormRef.current?.validate();
             if (!isValid) return;
+
+            const formValues = signupFormRef.current?.getValues();
+
+            const selectedRisk = riskConfig.find(r => r.risk === 'Medium') || riskConfig[0];
+
+            const newUser: User = {
+                id: Date.now(),
+                name: formValues!.name,
+                username: formValues!.username,
+                password: formValues!.password,
+                email: '',
+                phone: '',
+                risk: selectedRisk.risk,
+                authMethods: selectedRisk.authMethods,
+                requireEmailOTP: selectedRisk.requireEmailOTP,
+                requirePhoneOTP: selectedRisk.requirePhoneOTP,
+            };
+
+            setUsers(prev => [...prev, newUser]);
+            setCurrentUser(newUser);
         }
 
         if (activeStep === AuthMethods.emailMobileOTP) {
@@ -50,6 +73,16 @@ const Signup = () => {
                 alert('Please complete both email and phone verification.');
                 return;
             }
+
+            setUsers(prev =>
+                prev.map(user =>
+                    user.id === currentUser?.id
+                        ? { ...user, email: values.email, phone: values.phone }
+                        : user
+                )
+            );
+
+            setCurrentUser(prev => prev ? { ...prev, email: values.email, phone: values.phone } : prev);
         }
 
         if (activeStep === AuthMethods.authenticatorOTP) {

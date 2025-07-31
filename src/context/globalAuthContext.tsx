@@ -38,12 +38,12 @@ interface AuthContextType {
   riskConfig: RiskConfig[];
   setRiskConfig: React.Dispatch<React.SetStateAction<RiskConfig[]>>;
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
+  setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 const defaultRiskConfig: RiskConfig[] = [
-  { risk: 'Medium', authMethods: [AuthMethods.usernamePassword], requireEmailOTP: false, requirePhoneOTP: false },
-  { risk: 'High', authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP], requireEmailOTP: true, requirePhoneOTP: false },
+  { risk: 'Medium', authMethods: [AuthMethods.usernamePassword], requireEmailOTP: true, requirePhoneOTP: true },
+  { risk: 'High', authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP], requireEmailOTP: true, requirePhoneOTP: true },
   { risk: 'Severe', authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP], requireEmailOTP: true, requirePhoneOTP: true },
 ];
 
