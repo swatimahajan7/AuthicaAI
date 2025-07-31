@@ -172,7 +172,6 @@ const SeverityAuthTable = () => {
 
     setRiskConfig(updatedRiskConfig);
 
-    // Update all users with this risk level
     setUsers(prev =>
       prev.map(user =>
         user.risk === newSeverityName

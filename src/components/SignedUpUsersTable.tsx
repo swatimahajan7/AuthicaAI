@@ -20,47 +20,6 @@ const Dashboard = () => {
     status: 'Active',
     risk: user.risk
   }));
-  //   {
-  //     id: 1,
-  //     name: 'John Doe',
-  //     email: 'john.doe@example.com',
-  //     signupDate: '2024-01-15',
-  //     status: 'Active',
-  //     'risk': 'Medium'
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Sarah Johnson',
-  //     email: 'sarah.j@example.com',
-  //     signupDate: '2024-02-03',
-  //     status: 'Active',
-  //     'risk': 'Medium'
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Mike Chen',
-  //     email: 'mike.chen@example.com',
-  //     signupDate: '2024-02-18',
-  //     status: 'Inactive',
-  //     'risk': 'High'
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'Emily Rodriguez',
-  //     email: 'emily.r@example.com',
-  //     signupDate: '2024-03-02',
-  //     status: 'Active',
-  //     'risk': 'Severe'
-  //   },
-  //   {
-  //     id: 5,
-  //     name: 'David Kim',
-  //     email: 'david.kim@example.com',
-  //     signupDate: '2024-03-15',
-  //     status: 'Pending',
-  //     'risk': 'Medium'
-  //   }
-  // ]);
 
   interface User {
     id: number;
