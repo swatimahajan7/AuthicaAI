@@ -29,8 +29,11 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import { useAuthContext } from '../context/globalAuthContext';
 
 const SeverityAuthTable = () => {
+  const { riskConfig, setRiskConfig, users, setUsers } = useAuthContext();
+
   const [severityLevels, setSeverityLevels] = useState([
     {
       id: 1,
@@ -153,6 +156,35 @@ const SeverityAuthTable = () => {
       return;
     }
 
+      const updatedRiskConfig = riskConfig.map(config =>
+      config.risk === newSeverityName
+        ? {
+          ...config,
+          authMethods: selectedAuthMethods.map((methodId: any) => {
+            const option = authOptions.find(opt => opt.id === methodId);
+            return option ? option.label : methodId;
+          }),
+          requireEmailOTP: selectedAuthMethods.includes('email-otp'),
+          requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
+        }
+        : config
+    );
+
+    setRiskConfig(updatedRiskConfig);
+
+    setUsers(prev =>
+      prev.map(user =>
+        user.risk === newSeverityName
+          ? {
+            ...user,
+            authMethods: updatedRiskConfig.find(c => c.risk === newSeverityName)!.authMethods,
+            requireEmailOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requireEmailOTP,
+            requirePhoneOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requirePhoneOTP,
+          }
+          : user
+      )
+    );
+
     if (selectedAuthMethods.length === 0) {
       alert('Please select at least one authentication method');
       return;
@@ -163,18 +195,17 @@ const SeverityAuthTable = () => {
       return option ? option.label : methodId;
     });
 
-    setSeverityLevels(prev => prev.map(level =>
-      level.id === editingSeverity.id
-        ? {
-          ...level,
+ setSeverityLevels(prev => prev.map(level =>
+    level.id === editingSeverity.id
+      ? {
+          id: level.id,
           name: newSeverityName,
           class: getSeverityClass(newSeverityName),
-          auth: authMethods
+          auth: [...authMethods]
         }
-        : level
-    ));
+      : { ...level }
+  ));
     alert(`Successfully updated "${newSeverityName}" risk level.`);
-
     handleCloseDialog();
   };
 
@@ -266,14 +297,14 @@ const SeverityAuthTable = () => {
     },
   ], [getSeverityChipStyles, getAuthIcon]);
 
-  const rows = useMemo(() => severityLevels.map(level => ({
+  const rows =  severityLevels.map(level => ({
     id: level.id,
     name: level.name,
     class: level.class,
-    auth: level.auth,
+    auth: [...level.auth],
     severityLevel: level.name,
-    authMethods: level.auth
-  })), [severityLevels]);
+    authMethods: [...level.auth],
+  }));
 
   const renderAuthForm = () => (
     <>
@@ -327,10 +358,11 @@ const SeverityAuthTable = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        Risk Level Authentication Configuration
+        Risk Policy
       </Typography>
 
       <DataGrid
+        key={severityLevels.length + JSON.stringify(severityLevels)} 
         rows={rows}
         columns={columns}
         initialState={{
