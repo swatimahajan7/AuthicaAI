@@ -9,7 +9,7 @@ const Dashboard = () => {
     <div>
       <Navbar onTabChange={setActiveTab} />
       {activeTab === "Users" && <UserTable />}
-      {activeTab === "Settings" && <SeverityAuthTable />}
+      {activeTab === "Risk Policy" && <SeverityAuthTable />}
     </div>
   );
 };

@@ -13,7 +13,6 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import Badge from "@mui/material/Badge";
-import logo from "../assets/logo.svg";
 import { NotificationsList, type NotificationItem } from "./NotificationsList";
 import { useNavigate } from "react-router";
 import { Dialog, DialogTitle, DialogContent, DialogContentText } from "@mui/material";
@@ -22,7 +21,7 @@ type ResponsiveAppBarProps = {
   onTabChange?: (tabName: string) => void;
 };
 
-const pages = ["Users", "Settings"];
+const pages = ["Users", "Risk Policy"];
 const settings = ["Logout"];
 
 const initialNotifications: NotificationItem[] = [
@@ -153,26 +152,20 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
       <AppBar position="static" color="primary">
         <Container maxWidth={false}>
           <Toolbar disableGutters>
-
             <Typography
-              variant="h6"
+              variant="h5"
               noWrap
-              component="a"
-              href="#"
               sx={{
                 mr: 2,
                 display: { xs: "none", md: "flex" },
-                fontFamily: "Lato",
-                fontWeight: 700,
-                color: "inherit",
-                textDecoration: "none",
+                fontFamily: "Lato, sans-serif",
+                fontWeight: 900,
+                color: "#3b354bff",
+                letterSpacing: "1px",
+                fontSize: { xs: "1.25rem", md: "2rem" },
+
               }}
             >
-              <img
-                src={logo}
-                alt="Company Logo"
-                style={{ width: "auto", marginRight: "20px" }}
-              />
               AuthicaAI
             </Typography>
 
@@ -197,10 +190,13 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
                 sx={{ display: { xs: "block", md: "none" } }}
               >
                 {pages.map((page) => (
-                  <MenuItem key={page} onClick={() => {
-                    handleCloseNavMenu();
-                    onTabChange?.(page);
-                  }}>
+                  <MenuItem
+                    key={page}
+                    onClick={() => {
+                      handleCloseNavMenu();
+                      onTabChange?.(page);
+                    }}
+                  >
                     <Typography textAlign="center">{page}</Typography>
                   </MenuItem>
                 ))}
@@ -210,8 +206,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             <Typography
               variant="h5"
               noWrap
-              component="a"
-              href="#"
               sx={{
                 mr: 2,
                 display: { xs: "flex", md: "none" },
@@ -219,14 +213,8 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
                 fontFamily: "Lato",
                 fontWeight: 700,
                 color: "inherit",
-                textDecoration: "none",
               }}
             >
-              <img
-                src={logo}
-                alt="Company Logo"
-                style={{ width: "auto", marginRight: "20px" }}
-              />
               AuthicaAI
             </Typography>
 
