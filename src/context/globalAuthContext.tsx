@@ -28,6 +28,7 @@ export interface User {
   authMethods: string[];
   requireEmailOTP?: boolean;
   requirePhoneOTP?: boolean;
+  isAdmin?:boolean
 }
 
 interface AuthContextType {
@@ -67,7 +68,8 @@ const mockUsers: User[] = [
     risk: 'Medium',
     authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
     requireEmailOTP: false,
-    requirePhoneOTP: true
+    requirePhoneOTP: true,
+    isAdmin:true
   },
   {
     id: 2,
@@ -91,7 +93,8 @@ const mockUsers: User[] = [
     risk: 'High',
     authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP],
     requireEmailOTP: true,
-    requirePhoneOTP: false
+    requirePhoneOTP: false,
+    isAdmin:true
   },
   {
     id: 4,

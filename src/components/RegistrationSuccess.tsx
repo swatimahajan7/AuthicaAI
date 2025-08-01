@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 const RegistrationSuccess = () => {
     const navigate = useNavigate()
     const handleProceed = () => {
-        navigate('/dashboard')
+        navigate('/userDashboard')
         console.log('Proceeding to application...');
     };
 
