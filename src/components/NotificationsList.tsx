@@ -13,6 +13,20 @@ export type NotificationItem = {
     id: number;
     message: string;
     read: boolean;
+    title: string;
+    details: {
+        device: string;
+        location: {
+            city: string;
+            country: string;
+            coordinates: {
+                lat: number;
+                lon: number;
+            };
+        };
+        ip: string;
+        loginTime: string;
+    };
 };
 
 interface NotificationsListProps {
