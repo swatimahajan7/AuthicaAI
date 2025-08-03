@@ -28,7 +28,7 @@ export interface User {
   authMethods: string[];
   requireEmailOTP?: boolean;
   requirePhoneOTP?: boolean;
-  isAdmin?:boolean
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
@@ -40,6 +40,7 @@ interface AuthContextType {
   setRiskConfig: React.Dispatch<React.SetStateAction<RiskConfig[]>>;
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
+  logout: () => void;
 }
 
 const defaultRiskConfig: RiskConfig[] = [
@@ -66,10 +67,10 @@ const mockUsers: User[] = [
     email: 'john.doe@example.com',
     phone: '9876543210',
     risk: 'Medium',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    authMethods: [AuthMethods.usernamePassword],
     requireEmailOTP: false,
     requirePhoneOTP: true,
-    isAdmin:true
+    isAdmin: true
   },
   {
     id: 2,
@@ -94,7 +95,7 @@ const mockUsers: User[] = [
     authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP],
     requireEmailOTP: true,
     requirePhoneOTP: false,
-    isAdmin:true
+    isAdmin: true
   },
   {
     id: 4,
@@ -116,7 +117,7 @@ const mockUsers: User[] = [
     email: 'david.kim@example.com',
     phone: '9876543214',
     risk: 'Medium',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
+    authMethods: [AuthMethods.usernamePassword],
     requireEmailOTP: false,
     requirePhoneOTP: true
   }
@@ -134,8 +135,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setValues((prev) => ({ ...prev, ...newValues }));
   };
 
+  const logout = () => {
+    setCurrentUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ values, updateValues, users, setUsers, riskConfig, setRiskConfig, currentUser, setCurrentUser }}>
+    <AuthContext.Provider value={{ values, updateValues, users, setUsers, riskConfig, setRiskConfig, currentUser, setCurrentUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -27,7 +27,7 @@ const Dashboard = () => {
     email: string;
     signupDate: string;
     status: 'Active' | 'Inactive' | 'Pending' | string;
-    'risk': 'Severe' | 'Medium' | 'High' | string;
+    risk: 'Severe' | 'Medium' | 'High' | string;
   }
 
   const getStatusColor = (status: User['status']): 'success' | 'error' | 'warning' | 'default' => {
@@ -74,17 +74,19 @@ const Dashboard = () => {
 
   const handleRowUpdate = (newRow: User) => {
     const config = riskConfig.find(c => c.risk === newRow.risk as 'Medium' | 'High' | 'Severe');
+
     const updatedUsers = users.map(user =>
       user.id === newRow.id
         ? {
           ...user,
           risk: newRow.risk as 'Medium' | 'High' | 'Severe',
           authMethods: config?.authMethods || [],
-          requireEmailOTP: config?.requireEmailOTP || false,
-          requirePhoneOTP: config?.requirePhoneOTP || false,
+          requireEmailOTP: config?.requireEmailOTP ?? false,
+          requirePhoneOTP: config?.requirePhoneOTP ?? false,
         }
         : user
     );
+
     setUsers(updatedUsers);
     return newRow;
   };
