@@ -2,10 +2,19 @@ import { Box, Typography, Button } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useNavigate } from 'react-router';
 
-const SigninSuccess = () => {
+interface SigninSuccessProps {
+    isAdmin: boolean;
+}
+
+const SigninSuccess = ({ isAdmin }: SigninSuccessProps) => {
+    
     const navigate = useNavigate()
     const handleProceed = () => {
-        navigate('/dashboard')
+        if(isAdmin){
+            navigate('/adminDashboard')
+        }else{
+            navigate('/userDashboard')
+        }
         console.log('Signed in successfully!');
     };
 
