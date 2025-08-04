@@ -25,10 +25,7 @@ export interface User {
   email: string;
   phone: string;
   risk: 'Medium' | 'High' | 'Severe';
-  authMethods: string[];
-  requireEmailOTP?: boolean;
-  requirePhoneOTP?: boolean;
-  isAdmin?:boolean
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
@@ -40,6 +37,7 @@ interface AuthContextType {
   setRiskConfig: React.Dispatch<React.SetStateAction<RiskConfig[]>>;
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
+  logout: () => void;
 }
 
 const defaultRiskConfig: RiskConfig[] = [
@@ -66,10 +64,7 @@ const mockUsers: User[] = [
     email: 'john.doe@example.com',
     phone: '9876543210',
     risk: 'Medium',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
-    requireEmailOTP: false,
-    requirePhoneOTP: true,
-    isAdmin:true
+    isAdmin: true
   },
   {
     id: 2,
@@ -78,10 +73,7 @@ const mockUsers: User[] = [
     password: 'pass123',
     email: 'sarah.j@example.com',
     phone: '9876543211',
-    risk: 'Medium',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
-    requireEmailOTP: true,
-    requirePhoneOTP: false
+    risk: 'High'
   },
   {
     id: 3,
@@ -90,11 +82,8 @@ const mockUsers: User[] = [
     password: 'pass123',
     email: 'mike.chen@example.com',
     phone: '9876543212',
-    risk: 'High',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP],
-    requireEmailOTP: true,
-    requirePhoneOTP: false,
-    isAdmin:true
+    risk: 'Medium',
+    isAdmin: true
   },
   {
     id: 4,
@@ -103,10 +92,7 @@ const mockUsers: User[] = [
     password: 'pass123',
     email: 'emily.r@example.com',
     phone: '9876543213',
-    risk: 'Severe',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP, AuthMethods.authenticatorOTP, AuthMethods.faceRecognition],
-    requireEmailOTP: true,
-    requirePhoneOTP: true
+    risk: 'Severe'
   },
   {
     id: 5,
@@ -115,10 +101,7 @@ const mockUsers: User[] = [
     password: 'pass123',
     email: 'david.kim@example.com',
     phone: '9876543214',
-    risk: 'Medium',
-    authMethods: [AuthMethods.usernamePassword, AuthMethods.emailMobileOTP],
-    requireEmailOTP: false,
-    requirePhoneOTP: true
+    risk: 'Medium'
   }
 ];
 
@@ -134,8 +117,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setValues((prev) => ({ ...prev, ...newValues }));
   };
 
+  const logout = () => {
+    setCurrentUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ values, updateValues, users, setUsers, riskConfig, setRiskConfig, currentUser, setCurrentUser }}>
+    <AuthContext.Provider
+      value={{
+        values,
+        updateValues,
+        users,
+        setUsers,
+        riskConfig,
+        setRiskConfig,
+        currentUser,
+        setCurrentUser,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

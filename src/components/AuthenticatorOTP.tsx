@@ -44,8 +44,8 @@ const AuthenticatorOTP = forwardRef<AuthenticatorOTPHandle, AuthenticatorOTPProp
 
                 {mode === 'signup' && (
                     <>
-                        <Typography textAlign="center">
-                            Scan this QR code with your Authenticator app (e.g., Google Authenticator).
+                        <Typography textAlign="center" px={4}>
+                            Scan this QR code using one of the supported authenticator apps: Google Authenticator or Microsoft Authenticator.
                         </Typography>
                         <Box bgcolor="white" p={2} borderRadius={2}>
                             <QRCode value={otpAuthUrl} size={180} />

@@ -30,6 +30,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useAuthContext } from '../context/globalAuthContext';
+import { AuthMethods } from '../constants';
 
 const SeverityAuthTable = () => {
   const { riskConfig, setRiskConfig, users, setUsers } = useAuthContext();
@@ -45,13 +46,13 @@ const SeverityAuthTable = () => {
       id: 2,
       name: 'High',
       class: 'high',
-      auth: ['Basic Authentication', 'Phone OTP']
+      auth: ['Basic Authentication', 'Phone OTP', 'Email OTP']
     },
     {
       id: 3,
       name: 'Severe',
       class: 'severe',
-      auth: ['Basic Authentication', 'Phone OTP', 'Email OTP']
+      auth: ['Basic Authentication', 'Phone OTP', 'Email OTP', 'MFA (Multifactor Auth)']
     }
   ]);
 
@@ -156,14 +157,33 @@ const SeverityAuthTable = () => {
       return;
     }
 
-      const updatedRiskConfig = riskConfig.map(config =>
+    if (selectedAuthMethods.length === 0) {
+      alert('Please select at least one authentication method');
+      return;
+    }
+
+    const mappedAuthMethods = selectedAuthMethods.map((methodId: any) => {
+      switch (methodId) {
+        case 'basic-auth':
+          return AuthMethods.usernamePassword;
+        case 'phone-otp':
+          return AuthMethods.emailMobileOTP;
+        case 'email-otp':
+          return AuthMethods.emailMobileOTP;
+        case 'face-recognition':
+          return AuthMethods.faceRecognition;
+        case 'mfa':
+          return AuthMethods.authenticatorOTP;
+        default:
+          return AuthMethods.usernamePassword;
+      }
+    });
+
+    const updatedRiskConfig = riskConfig.map(config =>
       config.risk === newSeverityName
         ? {
           ...config,
-          authMethods: selectedAuthMethods.map((methodId: any) => {
-            const option = authOptions.find(opt => opt.id === methodId);
-            return option ? option.label : methodId;
-          }),
+          authMethods: mappedAuthMethods,
           requireEmailOTP: selectedAuthMethods.includes('email-otp'),
           requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
         }
@@ -177,34 +197,32 @@ const SeverityAuthTable = () => {
         user.risk === newSeverityName
           ? {
             ...user,
-            authMethods: updatedRiskConfig.find(c => c.risk === newSeverityName)!.authMethods,
-            requireEmailOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requireEmailOTP,
-            requirePhoneOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requirePhoneOTP,
+            authMethods: mappedAuthMethods,
+            requireEmailOTP: selectedAuthMethods.includes('email-otp'),
+            requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
           }
           : user
       )
     );
-
-    if (selectedAuthMethods.length === 0) {
-      alert('Please select at least one authentication method');
-      return;
-    }
 
     const authMethods = selectedAuthMethods.map((methodId: any) => {
       const option = authOptions.find(opt => opt.id === methodId);
       return option ? option.label : methodId;
     });
 
- setSeverityLevels(prev => prev.map(level =>
-    level.id === editingSeverity.id
-      ? {
-          id: level.id,
-          name: newSeverityName,
-          class: getSeverityClass(newSeverityName),
-          auth: [...authMethods]
-        }
-      : { ...level }
-  ));
+    setSeverityLevels(prev =>
+      prev.map(level =>
+        level.id === editingSeverity.id
+          ? {
+            id: level.id,
+            name: newSeverityName,
+            class: getSeverityClass(newSeverityName),
+            auth: [...authMethods]
+          }
+          : { ...level }
+      )
+    );
+
     alert(`Successfully updated "${newSeverityName}" risk level.`);
     handleCloseDialog();
   };
@@ -239,7 +257,7 @@ const SeverityAuthTable = () => {
     },
     {
       field: 'authMethods',
-      headerName: 'Auth Type',
+      headerName: 'Authentication Types',
       flex: 2,
       headerAlign: 'center',
       renderCell: (params: GridRenderCellParams) => (
@@ -297,7 +315,7 @@ const SeverityAuthTable = () => {
     },
   ], [getSeverityChipStyles, getAuthIcon]);
 
-  const rows =  severityLevels.map(level => ({
+  const rows = severityLevels.map(level => ({
     id: level.id,
     name: level.name,
     class: level.class,
@@ -356,21 +374,15 @@ const SeverityAuthTable = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h6" component="h6" gutterBottom sx={{ mb: 4 }}>
         Risk Policy
       </Typography>
 
       <DataGrid
-        key={severityLevels.length + JSON.stringify(severityLevels)} 
+        key={severityLevels.length + JSON.stringify(severityLevels)}
         rows={rows}
         columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
-          },
-        }}
-        pageSizeOptions={[5, 10]}
         disableRowSelectionOnClick
         disableColumnMenu
         disableColumnSelector
