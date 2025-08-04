@@ -28,12 +28,10 @@ const Signin = () => {
   const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
   const faceRef = useRef<FaceRecognitionHandle>(null);
 
-  // ✅ Reset state on mount
   useEffect(() => {
     resetSigninState();
   }, []);
 
-  // ✅ Reset state on logout
   useEffect(() => {
     if (!currentUser) {
       resetSigninState();
@@ -48,7 +46,6 @@ const Signin = () => {
     setAdminUser(false);
   };
 
-  // ✅ Sync user with riskConfig dynamically but no auto-complete
   useEffect(() => {
     if (currentUser) {
       const userRiskConfig = riskConfig.find(config => config.risk === currentUser.risk);
@@ -64,7 +61,6 @@ const Signin = () => {
         setSteps(userRiskConfig.authMethods);
         setActiveStepIndex(0);
         setCompleted({});
-        // ❌ Don't set isAllStepsComplete here (only after login)
       }
     }
   }, [riskConfig]);
@@ -104,7 +100,6 @@ const Signin = () => {
             setCompleted({});
             setIsAllStepsComplete(false);
           } else {
-            // ✅ Auto-complete only after login
             setActiveStepIndex(0);
             setCompleted({ 0: true });
             setIsAllStepsComplete(true);
