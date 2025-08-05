@@ -27,7 +27,7 @@ const Dashboard = () => {
     email: string;
     signupDate: string;
     status: 'Active' | 'Inactive' | 'Pending' | string;
-    'risk': 'Severe' | 'Medium' | 'High' | string;
+    risk: 'Severe' | 'Medium' | 'High' | string;
   }
 
   const getStatusColor = (status: User['status']): 'success' | 'error' | 'warning' | 'default' => {
@@ -74,17 +74,19 @@ const Dashboard = () => {
 
   const handleRowUpdate = (newRow: User) => {
     const config = riskConfig.find(c => c.risk === newRow.risk as 'Medium' | 'High' | 'Severe');
+
     const updatedUsers = users.map(user =>
       user.id === newRow.id
         ? {
           ...user,
           risk: newRow.risk as 'Medium' | 'High' | 'Severe',
           authMethods: config?.authMethods || [],
-          requireEmailOTP: config?.requireEmailOTP || false,
-          requirePhoneOTP: config?.requirePhoneOTP || false,
+          requireEmailOTP: config?.requireEmailOTP ?? false,
+          requirePhoneOTP: config?.requirePhoneOTP ?? false,
         }
         : user
     );
+
     setUsers(updatedUsers);
     return newRow;
   };
@@ -157,25 +159,17 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h6" component="h6" gutterBottom sx={{ mb: 3 }}>
           Users Management
         </Typography>
 
-        <Box sx={{ minHeight: 400, width: '100%' }}>
+        <Box sx={{ minHeight: 600, width: '100%' }}>
           <DataGrid
             rows={tableUsers}
             columns={columns}
             processRowUpdate={handleRowUpdate}
             getRowId={(row) => row.id}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
-              },
-            }}
-            pageSizeOptions={[5, 10, 25]}
             checkboxSelection
             disableRowSelectionOnClick
             sx={{
@@ -185,6 +179,9 @@ const Dashboard = () => {
               '& .MuiDataGrid-row:hover': {
                 backgroundColor: '#f0f0f0',
               },
+              '.MuiDataGrid-main': {
+                minHeight: 500,
+              }
             }}
           />
         </Box>

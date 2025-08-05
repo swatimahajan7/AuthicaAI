@@ -1,7 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import {
-  DataGrid,
-} from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import {
   Button,
@@ -20,45 +18,23 @@ import {
   DialogActions
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Lock as LockIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
   Fingerprint as FingerprintIcon,
   Security as SecurityIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useAuthContext } from '../context/globalAuthContext';
+import { AuthMethods } from '../constants';
 
 const SeverityAuthTable = () => {
-  const { riskConfig, setRiskConfig, users, setUsers } = useAuthContext();
-
-  const [severityLevels, setSeverityLevels] = useState([
-    {
-      id: 1,
-      name: 'Medium',
-      class: 'medium',
-      auth: ['Basic Authentication']
-    },
-    {
-      id: 2,
-      name: 'High',
-      class: 'high',
-      auth: ['Basic Authentication', 'Phone OTP']
-    },
-    {
-      id: 3,
-      name: 'Severe',
-      class: 'severe',
-      auth: ['Basic Authentication', 'Phone OTP', 'Email OTP']
-    }
-  ]);
+  const { riskConfig, setRiskConfig } = useAuthContext();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSeverity, setEditingSeverity] = useState<any>(null);
   const [newSeverityName, setNewSeverityName] = useState('');
-  const [selectedAuthMethods, setSelectedAuthMethods] = useState<any>([]);
+  const [selectedAuthMethods, setSelectedAuthMethods] = useState<string[]>([]);
 
   const authOptions = useMemo(() => [
     { id: 'basic-auth', label: 'Basic Authentication', icon: <LockIcon /> },
@@ -68,86 +44,50 @@ const SeverityAuthTable = () => {
     { id: 'mfa', label: 'MFA (Multifactor Auth)', icon: <SecurityIcon /> }
   ], []);
 
-  const getAuthIcon = useCallback((authMethod: any) => {
-    const method = authMethod.toLowerCase();
-    if (method.includes('basic')) return <LockIcon />;
-    if (method.includes('phone')) return <PhoneIcon />;
-    if (method.includes('email')) return <EmailIcon />;
-    if (method.includes('face')) return <FingerprintIcon />;
-    if (method.includes('mfa') || method.includes('multifactor')) return <SecurityIcon />;
+  const getAuthIcon = (method: string) => {
+    const lower = method.toLowerCase();
+    if (lower.includes('basic')) return <LockIcon />;
+    if (lower.includes('phone')) return <PhoneIcon />;
+    if (lower.includes('email')) return <EmailIcon />;
+    if (lower.includes('face')) return <FingerprintIcon />;
+    if (lower.includes('mfa')) return <SecurityIcon />;
     return <SecurityIcon />;
-  }, []);
-
-  const getSeverityClass = (name: string) => {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes('medium')) {
-      return 'medium';
-    } else if (lowerName.includes('high')) {
-      return 'high';
-    } else if (lowerName.includes('severe') || lowerName.includes('critical')) {
-      return 'severe';
-    } else {
-      return 'medium';
-    }
   };
 
   const getSeverityChipStyles = useCallback((severity: string) => {
-    switch (severity) {
+    switch (severity.toLowerCase()) {
       case 'medium':
-        return {
-          backgroundColor: '#ffebee',
-          color: '#c62828',
-          border: '1px solid #ef9a9a'
-        };
+        return { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a' };
       case 'high':
-        return {
-          backgroundColor: '#e57373',
-          color: '#ffffff',
-          border: '1px solid #f44336'
-        };
+        return { backgroundColor: '#e57373', color: '#fff', border: '1px solid #f44336' };
       case 'severe':
-        return {
-          backgroundColor: '#c62828',
-          color: '#ffffff',
-          border: '1px solid #b71c1c'
-        };
+        return { backgroundColor: '#c62828', color: '#fff', border: '1px solid #b71c1c' };
       default:
-        return {
-          backgroundColor: '#f5f5f5',
-          color: '#666666',
-          border: '1px solid #cccccc'
-        };
+        return { backgroundColor: '#f5f5f5', color: '#666', border: '1px solid #ccc' };
     }
   }, []);
 
-  const handleAuthMethodToggle = useCallback((methodId: any) => {
-    setSelectedAuthMethods((prev: any) =>
+  const handleAuthMethodToggle = useCallback((methodId: string) => {
+    setSelectedAuthMethods(prev =>
       prev.includes(methodId)
-        ? prev.filter((id: any) => id !== methodId)
+        ? prev.filter(id => id !== methodId)
         : [...prev, methodId]
     );
   }, []);
 
   const handleEditSeverity = (severity: any) => {
     setEditingSeverity(severity);
-    setNewSeverityName(severity.name);
+    setNewSeverityName(severity.risk);
 
-    const mappedAuthMethods: any = [];
-    severity.auth.forEach((authMethod: any) => {
-      const option = authOptions.find(opt => opt.label === authMethod);
-      if (option) {
-        mappedAuthMethods.push(option.id);
-      }
-    });
+    const selected: string[] = [];
+    if (severity.authMethods.includes(AuthMethods.usernamePassword)) selected.push('basic-auth');
+    if (severity.requirePhoneOTP) selected.push('phone-otp');
+    if (severity.requireEmailOTP) selected.push('email-otp');
+    if (severity.authMethods.includes(AuthMethods.faceRecognition)) selected.push('face-recognition');
+    if (severity.authMethods.includes(AuthMethods.authenticatorOTP)) selected.push('mfa');
 
-    setSelectedAuthMethods(mappedAuthMethods);
+    setSelectedAuthMethods(selected);
     setDialogOpen(true);
-  };
-
-  const handleDeleteSeverity = (severityId: any) => {
-    if (window.confirm('Are you sure you want to delete this severity level?')) {
-      setSeverityLevels(prev => prev.filter(level => level.id !== severityId));
-    }
   };
 
   const handleSaveSeverity = () => {
@@ -155,15 +95,27 @@ const SeverityAuthTable = () => {
       alert('Please enter a severity level name');
       return;
     }
+    if (selectedAuthMethods.length === 0) {
+      alert('Please select at least one authentication method');
+      return;
+    }
 
-      const updatedRiskConfig = riskConfig.map(config =>
+    const mappedAuthMethods = selectedAuthMethods.map((id: string) => {
+      switch (id) {
+        case 'basic-auth': return AuthMethods.usernamePassword;
+        case 'phone-otp': return AuthMethods.emailMobileOTP;
+        case 'email-otp': return AuthMethods.emailMobileOTP;
+        case 'face-recognition': return AuthMethods.faceRecognition;
+        case 'mfa': return AuthMethods.authenticatorOTP;
+        default: return AuthMethods.usernamePassword;
+      }
+    });
+
+    const updatedRiskConfig = riskConfig.map(config =>
       config.risk === newSeverityName
         ? {
           ...config,
-          authMethods: selectedAuthMethods.map((methodId: any) => {
-            const option = authOptions.find(opt => opt.id === methodId);
-            return option ? option.label : methodId;
-          }),
+          authMethods: mappedAuthMethods,
           requireEmailOTP: selectedAuthMethods.includes('email-otp'),
           requirePhoneOTP: selectedAuthMethods.includes('phone-otp'),
         }
@@ -171,97 +123,39 @@ const SeverityAuthTable = () => {
     );
 
     setRiskConfig(updatedRiskConfig);
-
-    setUsers(prev =>
-      prev.map(user =>
-        user.risk === newSeverityName
-          ? {
-            ...user,
-            authMethods: updatedRiskConfig.find(c => c.risk === newSeverityName)!.authMethods,
-            requireEmailOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requireEmailOTP,
-            requirePhoneOTP: updatedRiskConfig.find(c => c.risk === newSeverityName)!.requirePhoneOTP,
-          }
-          : user
-      )
-    );
-
-    if (selectedAuthMethods.length === 0) {
-      alert('Please select at least one authentication method');
-      return;
-    }
-
-    const authMethods = selectedAuthMethods.map((methodId: any) => {
-      const option = authOptions.find(opt => opt.id === methodId);
-      return option ? option.label : methodId;
-    });
-
- setSeverityLevels(prev => prev.map(level =>
-    level.id === editingSeverity.id
-      ? {
-          id: level.id,
-          name: newSeverityName,
-          class: getSeverityClass(newSeverityName),
-          auth: [...authMethods]
-        }
-      : { ...level }
-  ));
-    alert(`Successfully updated "${newSeverityName}" risk level.`);
-    handleCloseDialog();
-  };
-
-  const clearForm = () => {
-    setNewSeverityName('');
-    setSelectedAuthMethods([]);
-  };
-
-  const handleCloseDialog = () => {
     setDialogOpen(false);
-    setEditingSeverity(null);
-    clearForm();
   };
 
   const columns: GridColDef[] = useMemo(() => [
     {
-      field: 'severityLevel',
+      field: 'risk',
       headerName: 'Risk Level',
       flex: 1,
       headerAlign: 'center',
       align: 'center',
       renderCell: (params: GridRenderCellParams) => (
         <Chip
-          label={params.row.name}
-          sx={{
-            fontWeight: 'medium',
-            ...getSeverityChipStyles(params.row.class)
-          }}
+          label={params.value}
+          sx={{ fontWeight: 'medium', ...getSeverityChipStyles(params.value) }}
         />
       ),
     },
     {
-      field: 'authMethods',
-      headerName: 'Auth Type',
+      field: 'auth',
+      headerName: 'Authentication Methods',
       flex: 2,
       headerAlign: 'center',
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 0.5,
-          height: '100%',
-          alignItems: 'center',
-        }}>
-          {params.row.auth.map((method: string, idx: number) => (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, height: '100%', alignItems: 'center' }}>
+          {params.value.map((method: string, idx: number) => (
             <Chip
-              key={`${params.row.id}-${idx}`}
+              key={`${params.id}-${idx}`}
               icon={getAuthIcon(method)}
               label={method}
               variant="outlined"
               color="primary"
               size="small"
-              sx={{
-                backgroundColor: '#e3f2fd',
-                maxHeight: '24px'
-              }}
+              sx={{ backgroundColor: '#e3f2fd', maxHeight: '24px' }}
             />
           ))}
         </Box>
@@ -273,140 +167,81 @@ const SeverityAuthTable = () => {
       flex: 1,
       headerAlign: 'center',
       align: 'center',
-      sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEditSeverity(params.row)}
-            title="Edit"
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleDeleteSeverity(params.row.id)}
-            title="Delete"
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
+        <IconButton size="small" color="primary" onClick={() => handleEditSeverity(params.row)}>
+          <EditIcon />
+        </IconButton>
       ),
-    },
-  ], [getSeverityChipStyles, getAuthIcon]);
+    }
+  ], [getSeverityChipStyles]);
 
-  const rows =  severityLevels.map(level => ({
-    id: level.id,
-    name: level.name,
-    class: level.class,
-    auth: [...level.auth],
-    severityLevel: level.name,
-    authMethods: [...level.auth],
-  }));
+  const rows = riskConfig.map(config => {
+    const auth: string[] = [];
+    if (config.authMethods.includes(AuthMethods.usernamePassword)) auth.push('Basic Authentication');
+    if (config.requirePhoneOTP) auth.push('Phone OTP');
+    if (config.requireEmailOTP) auth.push('Email OTP');
+    if (config.authMethods.includes(AuthMethods.faceRecognition)) auth.push('Face Recognition');
+    if (config.authMethods.includes(AuthMethods.authenticatorOTP)) auth.push('MFA (Multifactor Auth)');
 
-  const renderAuthForm = () => (
-    <>
-      <TextField
-        fullWidth
-        label="Risk Level Name"
-        placeholder="Enter risk level: Medium, High, or Severe"
-        value={newSeverityName}
-        onChange={(e) => setNewSeverityName(e.target.value)}
-        sx={{ mb: 3, mt: 1 }}
-        variant="outlined"
-        helperText="Only Medium, High, and Severe are allowed"
-      />
-
-      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
-        Select Authentication Methods
-      </Typography>
-
-      <FormGroup sx={{ mb: 3 }}>
-        {authOptions.map((option) => (
-          <FormControlLabel
-            key={option.id}
-            control={
-              <Checkbox
-                checked={selectedAuthMethods.includes(option.id)}
-                onChange={() => handleAuthMethodToggle(option.id)}
-                color="primary"
-              />
-            }
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {option.icon}
-                <Typography sx={{ ml: 1 }}>{option.label}</Typography>
-              </Box>
-            }
-            sx={{
-              border: '1px solid #e0e0e0',
-              borderRadius: 1,
-              m: 0.5,
-              p: 1,
-              '&:hover': {
-                backgroundColor: '#f5f5f5'
-              }
-            }}
-          />
-        ))}
-      </FormGroup>
-    </>
-  );
+    return {
+      id: config.risk,
+      risk: config.risk,
+      auth,
+      authMethods: config.authMethods,
+      requireEmailOTP: config.requireEmailOTP,
+      requirePhoneOTP: config.requirePhoneOTP,
+    };
+  });
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h6" gutterBottom sx={{ mb: 4 }}>
         Risk Policy
       </Typography>
 
       <DataGrid
-        key={severityLevels.length + JSON.stringify(severityLevels)} 
         rows={rows}
         columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
-          },
-        }}
-        pageSizeOptions={[5, 10]}
+        hideFooter
         disableRowSelectionOnClick
         disableColumnMenu
-        disableColumnSelector
-        disableDensitySelector
-        density='comfortable'
-        sx={{
-          marginBottom: '20px'
-        }}
       />
 
-      <Dialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <EditIcon color="primary" sx={{ mr: 1 }} />
-            Edit Risk Level
-          </Box>
-        </DialogTitle>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Risk Level</DialogTitle>
         <DialogContent>
-          {renderAuthForm()}
+          <TextField
+            fullWidth
+            label="Risk Level"
+            value={newSeverityName}
+            disabled
+            sx={{ mb: 3, mt: 1 }}
+          />
+          <Typography variant="subtitle1" gutterBottom>Select Authentication Methods</Typography>
+          <FormGroup>
+            {authOptions.map(option => (
+              <FormControlLabel
+                key={option.id}
+                control={
+                  <Checkbox
+                    checked={selectedAuthMethods.includes(option.id)}
+                    onChange={() => handleAuthMethodToggle(option.id)}
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {option.icon}
+                    <Typography sx={{ ml: 1 }}>{option.label}</Typography>
+                  </Box>
+                }
+              />
+            ))}
+          </FormGroup>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveSeverity}
-            variant="contained"
-            color="primary"
-            startIcon={<EditIcon />}
-          >
-            Update Risk Level
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="secondary">Cancel</Button>
+          <Button onClick={handleSaveSeverity} variant="contained" color="primary" startIcon={<EditIcon />}>
+            Update
           </Button>
         </DialogActions>
       </Dialog>
