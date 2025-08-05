@@ -168,10 +168,7 @@ const Signin = () => {
               {activeStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode="signin" />}
             </Box>
 
-            <Box my={2} display="flex" justifyContent="space-between">
-              <Button variant="outlined" onClick={handleBack} disabled={activeStepIndex === 0}>
-                Back
-              </Button>
+            <Box my={2} display="flex" justifyContent="flex-end">
               <Button variant="contained" onClick={handleContinue}>
                 Continue
               </Button>

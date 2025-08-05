@@ -11,9 +11,14 @@ interface EmailMobileOTPProps {
 }
 
 const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ mode = 'signup' }, ref) => {
-    const { values, updateValues, currentUser } = useAuthContext();
-    const showEmail = !!currentUser?.requireEmailOTP;
-    const showPhone = !!currentUser?.requirePhoneOTP;
+    const { values, updateValues, currentUser, riskConfig } = useAuthContext();
+
+    const currentRiskConfig = currentUser
+        ? riskConfig.find(r => r.risk === currentUser.risk)
+        : null;
+
+    const showEmail = !!currentRiskConfig?.requireEmailOTP;
+    const showPhone = !!currentRiskConfig?.requirePhoneOTP;
 
     const [emailCodeSent, setEmailCodeSent] = useState(mode === 'signin');
     const [emailInputCode, setEmailInputCode] = useState('');
@@ -59,8 +64,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
     return (
         <Box display="flex" flexDirection="column" gap={4} mt={3}>
             {/* Email Section */}
-            {
-                showEmail &&
+            {showEmail && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Typography variant="h6">
                         {mode === 'signin' ? 'Verify your email to sign in' : 'Enter and verify your email'}
@@ -71,7 +75,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                             label="Email"
                             value={values.email}
                             onChange={(e) => updateValues({ email: e.target.value })}
-                            sx={{ mt: 2 }}
+                            sx={{ mt: 2, width: '50%' }}
                             disabled={emailCodeSent || emailVerified || emailLocked}
                         />
                     )}
@@ -89,7 +93,12 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                 onChange={(e) => setEmailInputCode(e.target.value)}
                                 error={!!emailError}
                                 helperText={emailError}
-                                sx={{ my: 1 }}
+                                slotProps={{
+                                    htmlInput: {
+                                        maxLength: 6
+                                    }
+                                }}
+                                sx={{ my: 1, width: '50%' }}
                             />
                             <Box display="flex" gap={2}>
                                 {mode === 'signup' && (
@@ -113,7 +122,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                 setEmailError('');
                                 setEmailLocked(true);
                             }}
-                            sx={{ mt: 1 }}
+                            sx={{ mt: 1, width: '50%' }}
                             disabled={!values.email}
                         >
                             Send Email Code
@@ -126,13 +135,12 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                         </Typography>
                     )}
                 </Box>
-            }
+            )}
 
             {(showEmail && showPhone) && <Divider />}
 
             {/* Phone Section */}
-            {
-                showPhone &&
+            {showPhone && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Typography variant="h6">
                         {mode === 'signin' ? 'Verify your mobile to sign in' : 'Enter and verify your mobile'}
@@ -143,8 +151,13 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                             label="Phone"
                             value={values.phone}
                             onChange={(e) => updateValues({ phone: e.target.value })}
-                            sx={{ mt: 2 }}
+                            sx={{ mt: 2, width: '50%' }}
                             disabled={phoneCodeSent || phoneVerified || phoneLocked}
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 10
+                                }
+                            }}
                         />
                     )}
 
@@ -161,7 +174,12 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                 onChange={(e) => setPhoneInputCode(e.target.value)}
                                 error={!!phoneError}
                                 helperText={phoneError}
-                                sx={{ my: 1 }}
+                                slotProps={{
+                                    htmlInput: {
+                                        maxLength: 6
+                                    }
+                                }}
+                                sx={{ my: 1, width: '50%' }}
                             />
                             <Box display="flex" gap={2}>
                                 {mode === 'signup' && (
@@ -185,7 +203,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                                 setPhoneError('');
                                 setPhoneLocked(true);
                             }}
-                            sx={{ mt: 1 }}
+                            sx={{ mt: 1, width: '50%' }}
                             disabled={!values.phone}
                         >
                             Send SMS Code
@@ -198,7 +216,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
                         </Typography>
                     )}
                 </Box>
-            }
+            )}
         </Box>
     );
 });

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 const RegistrationSuccess = () => {
     const navigate = useNavigate()
     const handleProceed = () => {
-        navigate('/userDashboard')
+        navigate('/signin')
         console.log('Proceeding to application...');
     };
 
@@ -26,7 +26,7 @@ const RegistrationSuccess = () => {
             </Typography>
 
             <Typography variant="body1" maxWidth={400}>
-                You have successfully completed all the steps of registration. You may now proceed to use the application.
+                You have successfully completed all the steps of registration. You may now login to use the application.
             </Typography>
 
             <Button variant="contained" color="primary" onClick={handleProceed}>

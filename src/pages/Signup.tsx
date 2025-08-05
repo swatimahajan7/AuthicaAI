@@ -28,7 +28,7 @@ const Signup = () => {
         if (nextStep) {
             setActiveStep(nextStep);
         } else {
-            setCompleted((prev) => ({
+            setCompleted(prev => ({
                 ...prev,
                 [activeStepNumber]: true,
             }));
@@ -47,7 +47,6 @@ const Signup = () => {
             if (!isValid) return;
 
             const formValues = signupFormRef.current?.getValues();
-
             const selectedRisk = riskConfig.find(r => r.risk === 'Medium') || riskConfig[0];
 
             const newUser: User = {
@@ -57,10 +56,7 @@ const Signup = () => {
                 password: formValues!.password,
                 email: '',
                 phone: '',
-                risk: selectedRisk.risk,
-                authMethods: selectedRisk.authMethods,
-                requireEmailOTP: selectedRisk.requireEmailOTP,
-                requirePhoneOTP: selectedRisk.requirePhoneOTP,
+                risk: selectedRisk.risk
             };
 
             setUsers(prev => [...prev, newUser]);
@@ -82,7 +78,9 @@ const Signup = () => {
                 )
             );
 
-            setCurrentUser(prev => prev ? { ...prev, email: values.email, phone: values.phone } : prev);
+            setCurrentUser(prev =>
+                prev ? { ...prev, email: values.email, phone: values.phone } : prev
+            );
         }
 
         if (activeStep === AuthMethods.authenticatorOTP) {
@@ -130,7 +128,9 @@ const Signup = () => {
                         </Box>
 
                         <Box my={2} display="flex" justifyContent="space-between">
-                            <Button variant="outlined" onClick={handleBack} disabled={activeStepNumber === 0}>
+                            <Button variant="outlined" onClick={handleBack} disabled={activeStepNumber === 0} sx={{
+                                visibility: activeStepNumber === 0 ? 'hidden' : 'visible'
+                            }}>
                                 Back
                             </Button>
                             <Button variant="contained" onClick={handleContinue}>
