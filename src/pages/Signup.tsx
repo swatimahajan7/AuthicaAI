@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import StepperComponent from '../components/StepperComponent';
 import { AuthMethods, AuthSteps } from '../constants';
 import './Signup.css';
 import SignupForm, { type SignupFormHandle } from '../components/SignupForm';
@@ -11,10 +10,8 @@ import RegistrationSuccess from '../components/RegistrationSuccess';
 import { useAuthContext, type User } from '../context/globalAuthContext';
 
 const Signup = () => {
-    const [activeStep, setActiveStep] = useState(AuthSteps[0]);
-    const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
-    const activeStepNumber = AuthSteps.indexOf(activeStep);
-    const isAllStepsComplete = activeStep === "success";
+    const [currentStep, setCurrentStep] = useState(AuthSteps[0]);
+    const [isAllStepsComplete, setIsAllStepsComplete] = useState(false);
 
     const signupFormRef = useRef<SignupFormHandle>(null);
     const emailOtpRef = useRef<EmailMobileOTPHandle>(null);
@@ -23,31 +20,19 @@ const Signup = () => {
 
     const { values, setUsers, currentUser, setCurrentUser, riskConfig } = useAuthContext();
 
-    const handleNext = () => {
-        const nextStep = AuthSteps[activeStepNumber + 1];
-        if (nextStep) {
-            setActiveStep(nextStep);
-        } else {
-            setCompleted((prev) => ({
-                ...prev,
-                [activeStepNumber]: true,
-            }));
-            setActiveStep("success");
+    const handleBack = () => {
+        const prevIndex = AuthSteps.indexOf(currentStep) - 1;
+        if (prevIndex >= 0) {
+            setCurrentStep(AuthSteps[prevIndex]);
         }
     };
 
-    const handleBack = () => {
-        const prevStep = AuthSteps[activeStepNumber - 1];
-        if (prevStep) setActiveStep(prevStep);
-    };
-
     const handleContinue = async () => {
-        if (activeStep === AuthMethods.usernamePassword) {
+        if (currentStep === AuthMethods.usernamePassword) {
             const isValid = await signupFormRef.current?.validate();
             if (!isValid) return;
 
             const formValues = signupFormRef.current?.getValues();
-
             const selectedRisk = riskConfig.find(r => r.risk === 'Medium') || riskConfig[0];
 
             const newUser: User = {
@@ -57,19 +42,15 @@ const Signup = () => {
                 password: formValues!.password,
                 email: '',
                 phone: '',
-                risk: selectedRisk.risk,
-                authMethods: selectedRisk.authMethods,
-                requireEmailOTP: selectedRisk.requireEmailOTP,
-                requirePhoneOTP: selectedRisk.requirePhoneOTP,
+                risk: selectedRisk.risk
             };
 
             setUsers(prev => [...prev, newUser]);
             setCurrentUser(newUser);
         }
 
-        if (activeStep === AuthMethods.emailMobileOTP) {
-            const isVerified = emailOtpRef.current?.isVerified();
-            if (!isVerified) {
+        if (currentStep === AuthMethods.emailMobileOTP) {
+            if (!emailOtpRef.current?.isVerified()) {
                 alert('Please complete both email and phone verification.');
                 return;
             }
@@ -82,30 +63,27 @@ const Signup = () => {
                 )
             );
 
-            setCurrentUser(prev => prev ? { ...prev, email: values.email, phone: values.phone } : prev);
+            setCurrentUser(prev =>
+                prev ? { ...prev, email: values.email, phone: values.phone } : prev
+            );
         }
 
-        if (activeStep === AuthMethods.authenticatorOTP) {
-            const isVerified = authenticatorRef.current?.isVerified();
-            if (!isVerified) {
-                alert('Please verify the Authenticator OTP before continuing.');
-                return;
-            }
+        if (currentStep === AuthMethods.authenticatorOTP && !authenticatorRef.current?.isVerified()) {
+            alert('Please verify the Authenticator OTP before continuing.');
+            return;
         }
 
-        if (activeStep === AuthMethods.faceRecognition) {
-            const isCaptured = faceRef.current?.isCaptured();
-            if (!isCaptured) {
-                alert('Please capture your face before continuing.');
-                return;
-            }
+        if (currentStep === AuthMethods.faceRecognition && !faceRef.current?.isCaptured()) {
+            alert('Please capture your face before continuing.');
+            return;
         }
 
-        setCompleted({
-            ...completed,
-            [activeStepNumber]: true,
-        });
-        handleNext();
+        const nextIndex = AuthSteps.indexOf(currentStep) + 1;
+        if (nextIndex < AuthSteps.length) {
+            setCurrentStep(AuthSteps[nextIndex]);
+        } else {
+            setIsAllStepsComplete(true);
+        }
     };
 
     return (
@@ -113,24 +91,27 @@ const Signup = () => {
             <div className='signup-section'>
                 {!isAllStepsComplete ? (
                     <>
-                        <StepperComponent steps={AuthSteps} activeStepNumber={activeStepNumber} completed={completed} />
-
                         <Box sx={{
                             backgroundColor: '#f0f8ff',
                             paddingY: '50px',
-                            boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 -4px 8px 0 rgba(0, 0, 0, 0.1)",
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                             borderRadius: '30px',
                             overflowY: "scroll"
                         }}>
                             <img src='../src/assets/logo.svg' width={200} className='logo' />
-                            {activeStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                            {activeStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef} mode='signup' />}
-                            {activeStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode='signup' />}
-                            {activeStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
+                            {currentStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
+                            {currentStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef} mode='signup' />}
+                            {currentStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode='signup' />}
+                            {currentStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
                         </Box>
 
                         <Box my={2} display="flex" justifyContent="space-between">
-                            <Button variant="outlined" onClick={handleBack} disabled={activeStepNumber === 0}>
+                            <Button
+                                variant="outlined"
+                                onClick={handleBack}
+                                disabled={AuthSteps.indexOf(currentStep) === 0}
+                                sx={{ visibility: AuthSteps.indexOf(currentStep) === 0 ? 'hidden' : 'visible' }}
+                            >
                                 Back
                             </Button>
                             <Button variant="contained" onClick={handleContinue}>

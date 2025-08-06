@@ -59,7 +59,7 @@ const SignupForm = forwardRef<SignupFormHandle>((_, ref) => {
 
                             <Box
                                 sx={{
-                                    width: '50%',
+                                    width: '70%',
                                     alignSelf: 'center',
                                     display: 'flex',
                                     flexDirection: 'column',
