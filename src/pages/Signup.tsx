@@ -20,6 +20,13 @@ const Signup = () => {
 
     const { values, setUsers, currentUser, setCurrentUser, riskConfig } = useAuthContext();
 
+    const handleBack = () => {
+        const prevIndex = AuthSteps.indexOf(currentStep) - 1;
+        if (prevIndex >= 0) {
+            setCurrentStep(AuthSteps[prevIndex]);
+        }
+    };
+
     const handleContinue = async () => {
         if (currentStep === AuthMethods.usernamePassword) {
             const isValid = await signupFormRef.current?.validate();
@@ -98,7 +105,15 @@ const Signup = () => {
                             {currentStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
                         </Box>
 
-                        <Box my={2} display="flex" justifyContent="flex-end">
+                        <Box my={2} display="flex" justifyContent="space-between">
+                            <Button
+                                variant="outlined"
+                                onClick={handleBack}
+                                disabled={AuthSteps.indexOf(currentStep) === 0}
+                                sx={{ visibility: AuthSteps.indexOf(currentStep) === 0 ? 'hidden' : 'visible' }}
+                            >
+                                Back
+                            </Button>
                             <Button variant="contained" onClick={handleContinue}>
                                 Continue
                             </Button>

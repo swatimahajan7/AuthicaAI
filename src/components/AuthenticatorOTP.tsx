@@ -69,7 +69,7 @@ const AuthenticatorOTP = forwardRef<AuthenticatorOTPHandle, AuthenticatorOTPProp
                             maxLength: 6
                         }
                     }}
-                    sx={{ width: '50%' }}
+                    sx={{ width: '70%' }}
                 />
                 <Button variant="contained" onClick={handleVerify}>
                     {mode === 'signin' ? 'Verify' : 'Continue'}
