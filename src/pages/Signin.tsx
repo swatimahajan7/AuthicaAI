@@ -178,7 +178,7 @@ const Signin = () => {
             </Box>
           </>
         ) : (
-          <SigninSuccess isAdmin={adminUser} />
+          <SigninSuccess isAdmin={adminUser} username={currentUser?.username}/>
         )}
       </div>
     </div>

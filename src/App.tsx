@@ -5,6 +5,7 @@ import Signin from './pages/Signin'
 import AdminDashboard from './pages/AdminDashboard'
 import UserDashboard from './components/UserDashboard'
 import { AuthProvider } from './context/globalAuthContext'
+import ProfilePage from './components/UserProfile'
 
 function App() {
 
@@ -15,8 +16,9 @@ function App() {
           <Route path="/" element={<Signin />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/userDashboard" element={<UserDashboard  />} />
+          <Route path="/userHome/:username" element={<UserDashboard  />} />
           <Route path="/adminDashboard" element={<AdminDashboard />} />
+          <Route path="/userProfile" element={<ProfilePage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

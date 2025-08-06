@@ -7,7 +7,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("Users");
   return (
     <div>
-      <Navbar onTabChange={setActiveTab} />
+      <Navbar onTabChange={setActiveTab} isAdmin={true} />
       {activeTab === "Users" && <UserTable />}
       {activeTab === "Risk Policy" && <SeverityAuthTable />}
     </div>

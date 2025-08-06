@@ -19,10 +19,11 @@ import { Dialog, DialogTitle, DialogContent, DialogContentText } from "@mui/mate
 
 type ResponsiveAppBarProps = {
   onTabChange?: (tabName: string) => void;
+  isAdmin:boolean
 };
 
 const pages = ["Users", "Risk Policy"];
-const settings = ["Logout"];
+const settings = ["Logout", "Profile"];
 
 const initialNotifications: NotificationItem[] = [
   {
@@ -108,7 +109,7 @@ const initialNotifications: NotificationItem[] = [
 ];
 
 
-function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
+function ResponsiveAppBar({ onTabChange,isAdmin }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
@@ -149,7 +150,7 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
 
   return (
     <>
-      <AppBar position="static" color="primary">
+      <AppBar position="fixed" color="primary">
         <Container maxWidth={false}>
           <Toolbar disableGutters>
             <Typography
@@ -163,7 +164,6 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
                 color: "#3b354bff",
                 letterSpacing: "1px",
                 fontSize: { xs: "1.25rem", md: "2rem" },
-
               }}
             >
               AuthicaAI
@@ -189,17 +189,18 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
                 onClose={handleCloseNavMenu}
                 sx={{ display: { xs: "block", md: "none" } }}
               >
-                {pages.map((page) => (
-                  <MenuItem
-                    key={page}
-                    onClick={() => {
-                      handleCloseNavMenu();
-                      onTabChange?.(page);
-                    }}
-                  >
-                    <Typography textAlign="center">{page}</Typography>
-                  </MenuItem>
-                ))}
+                {isAdmin &&
+                  pages.map((page) => (
+                    <MenuItem
+                      key={page}
+                      onClick={() => {
+                        handleCloseNavMenu();
+                        onTabChange?.(page);
+                      }}
+                    >
+                      <Typography textAlign="center">{page}</Typography>
+                    </MenuItem>
+                  ))}
               </Menu>
             </Box>
 
@@ -219,44 +220,47 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-              {pages.map((page) => (
-                <Button
-                  key={page}
-                  onClick={() => {
-                    handleCloseNavMenu();
-                    onTabChange?.(page);
-                  }}
-                  sx={{
-                    my: 2,
-                    color: "white",
-                    display: "block",
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                    textTransform: 'none',
-                    fontSize: 16
-                  }}
-                >
-                  {page}
-                </Button>
-              ))}
+              {isAdmin &&
+                pages.map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => {
+                      handleCloseNavMenu();
+                      onTabChange?.(page);
+                    }}
+                    sx={{
+                      my: 2,
+                      color: "white",
+                      display: "block",
+                      "&:hover": {
+                        backgroundColor: "primary.dark",
+                      },
+                      textTransform: "none",
+                      fontSize: 16,
+                    }}
+                  >
+                    {page}
+                  </Button>
+                ))}
             </Box>
 
             <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
-              <Tooltip title="View notifications">
-                <IconButton
-                  onClick={handleOpenNotificationsMenu}
-                  sx={{ p: 0, mr: 2, color: "inherit" }}
-                >
-                  <Badge
-                    color="error"
-                    variant={unreadCount > 0 ? "dot" : "standard"}
-                    overlap="circular"
+              {isAdmin && (
+                <Tooltip title="View notifications">
+                  <IconButton
+                    onClick={handleOpenNotificationsMenu}
+                    sx={{ p: 0, mr: 2, color: "inherit" }}
                   >
-                    <NotificationsIcon />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
+                    <Badge
+                      color="error"
+                      variant={unreadCount > 0 ? "dot" : "standard"}
+                      overlap="circular"
+                    >
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
               <Menu
                 anchorEl={anchorElNotifications}
                 open={Boolean(anchorElNotifications)}
@@ -273,7 +277,10 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
 
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Admin Avatar" src="/static/images/avatar/2.jpg" />
+                  <Avatar
+                    alt="Admin Avatar"
+                    src="/static/images/avatar/2.jpg"
+                  />
                 </IconButton>
               </Tooltip>
               <Menu
@@ -286,7 +293,17 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
                 sx={{ mt: "45px" }}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={() => navigate('/signin')}>
+                  <MenuItem
+                    key={setting}
+                    onClick={() => {
+                      handleCloseUserMenu(); 
+                      if (setting === "Profile") {
+                        navigate("/userProfile");
+                      } else if (setting === "Logout") {
+                        navigate("/signin");
+                      }
+                    }}
+                  >
                     <Typography textAlign="center">{setting}</Typography>
                   </MenuItem>
                 ))}
@@ -295,29 +312,40 @@ function ResponsiveAppBar({ onTabChange }: ResponsiveAppBarProps) {
           </Toolbar>
         </Container>
       </AppBar>
-      {
-        openNotificationPopup && <Dialog
+      {openNotificationPopup && (
+        <Dialog
           open={openNotificationPopup}
           onClose={() => setOpenNotificationPopup(false)}
         >
-          <DialogTitle>
-            {selectedNotification.title}
-          </DialogTitle>
+          <DialogTitle>{selectedNotification.title}</DialogTitle>
           <DialogContent>
             <DialogContentText component="div">
-              <p><strong>Device:</strong> {selectedNotification.details.device}</p>
-              <p><strong>Location:</strong> {selectedNotification.details.location.city}, {selectedNotification.details.location.country}</p>
+              <p>
+                <strong>Device:</strong> {selectedNotification.details.device}
+              </p>
+              <p>
+                <strong>Location:</strong>{" "}
+                {selectedNotification.details.location.city},{" "}
+                {selectedNotification.details.location.country}
+              </p>
               <p>
                 <strong>Coordinates:</strong>
                 {selectedNotification.details.location.coordinates.lat},
                 {selectedNotification.details.location.coordinates.lon}
               </p>
-              <p><strong>IP Address:</strong> {selectedNotification.details.ip}</p>
-              <p><strong>Login Time:</strong> {new Date(selectedNotification.details.loginTime).toLocaleString()}</p>
+              <p>
+                <strong>IP Address:</strong> {selectedNotification.details.ip}
+              </p>
+              <p>
+                <strong>Login Time:</strong>{" "}
+                {new Date(
+                  selectedNotification.details.loginTime
+                ).toLocaleString()}
+              </p>
             </DialogContentText>
           </DialogContent>
         </Dialog>
-      }
+      )}
     </>
   );
 }
