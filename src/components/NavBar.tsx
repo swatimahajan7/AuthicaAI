@@ -17,7 +17,7 @@ import { NotificationsList, type NotificationItem } from "./NotificationsList";
 import { useNavigate } from "react-router";
 
 type ResponsiveAppBarProps = {
-  notifications: NotificationItem[];
+  notifications?: NotificationItem[];
   onTabChange?: (tabName: string) => void;
   onNotificationSelect?: (notif: NotificationItem) => void;
   isAdmin:boolean
@@ -32,10 +32,10 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, is
   const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
 
   const navigate = useNavigate();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   const handleNotificationClick = (id: number) => {
-    const notif = notifications.find((n) => n.id === id)!;
+    const notif = (notifications ?? []).find((n) => n.id === id)!;
     onTabChange?.("Alerts");
     onNotificationSelect?.(notif);
     setAnchorElNotifications(null);
@@ -132,7 +132,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, is
                 open={Boolean(anchorElNotifications)}
                 onClose={() => setAnchorElNotifications(null)}
               >
-                <NotificationsList notifications={notifications} onItemClick={handleNotificationClick} />
+                <NotificationsList notifications={notifications ?? []} onItemClick={handleNotificationClick} />
               </Menu>
 
               <Tooltip title="Open settings">
