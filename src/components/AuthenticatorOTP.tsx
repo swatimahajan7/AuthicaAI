@@ -64,8 +64,12 @@ const AuthenticatorOTP = forwardRef<AuthenticatorOTPHandle, AuthenticatorOTPProp
                     onChange={(e) => setOtp(e.target.value)}
                     error={!!error}
                     helperText={error}
-                    inputProps={{ maxLength: 6 }}
-                    sx={{ width: 200 }}
+                    slotProps={{
+                        htmlInput: {
+                            maxLength: 6
+                        }
+                    }}
+                    sx={{ width: '70%' }}
                 />
                 <Button variant="contained" onClick={handleVerify}>
                     {mode === 'signin' ? 'Verify' : 'Continue'}

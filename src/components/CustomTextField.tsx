@@ -15,7 +15,6 @@ const CustomTextField = ({ name, label, value, onChange, ...rest }: CustomTextFi
             value={value}
             onChange={onChange}
             variant="outlined"
-            fullWidth
             {...rest}
         />
     );
