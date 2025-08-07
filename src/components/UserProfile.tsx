@@ -26,7 +26,9 @@ import {
   CheckCircle,
   Cancel,
   Security,
-  Smartphone
+  Smartphone,
+  ArrowBack,
+  Email
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import type { FileRejection } from 'react-dropzone';
@@ -34,6 +36,7 @@ import Webcam from 'react-webcam';
 
 
 interface UserData {
+  email: string;
   phone: string;
   profileImage: string | null;
   isAuthenticatorSetup: boolean;
@@ -43,6 +46,11 @@ interface PasswordData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+interface EmailData {
+  currentEmail: string;
+  newEmail: string;
 }
 
 interface SnackbarState {
@@ -90,7 +98,6 @@ const WebcamContainer = styled(Box)(({ theme }) => ({
 }));
 
 const UserProfilePage: React.FC = () => {
-  // State management
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [showWebcam, setShowWebcam] = useState<boolean>(false);
@@ -102,6 +109,7 @@ const UserProfilePage: React.FC = () => {
   
   
   const [userData, setUserData] = useState<UserData>({
+    email: 'user@example.com',
     phone: '+1 (555) 123-4567',
     profileImage: null,
     isAuthenticatorSetup: true 
@@ -113,12 +121,22 @@ const UserProfilePage: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [emailData, setEmailData] = useState<EmailData>({
+    currentEmail: '',
+    newEmail: ''
+  });
   
-  // Refs
+  
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Drag and drop configuration
+  
+  const handleBackToHome = (): void => {
+    window.history.back(); 
+  };
+
+  
   const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
     const file = acceptedFiles[0];
     if (file && file.type.startsWith('image/')) {
@@ -144,7 +162,7 @@ const UserProfilePage: React.FC = () => {
     maxSize: 5242880 // 5MB
   });
 
-  // Webcam capture function
+  
   const captureImage = useCallback((): void => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
@@ -186,6 +204,33 @@ const UserProfilePage: React.FC = () => {
     showSnackbar('Password updated successfully!', 'success');
   };
 
+  const handleEmailChange = async (): Promise<void> => {
+    if (!emailData.currentEmail || !emailData.newEmail) {
+      showSnackbar('Please fill in both current and new email', 'error');
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailData.newEmail)) {
+      showSnackbar('Please enter a valid email address', 'error');
+      return;
+    }
+    
+    if (emailData.currentEmail !== userData.email) {
+      showSnackbar('Current email does not match', 'error');
+      return;
+    }
+    
+    setLoading(true);
+    
+    await new Promise<void>(resolve => setTimeout(resolve, 1500));
+    setUserData(prev => ({ ...prev, email: emailData.newEmail }));
+    setEmailData({ currentEmail: '', newEmail: '' });
+    setLoading(false);
+    showSnackbar('Email updated successfully!', 'success');
+  };
+
   const setupAuthenticator = (): void => {
     
     setUserData(prev => ({ ...prev, isAuthenticatorSetup: true }));
@@ -201,6 +246,7 @@ const UserProfilePage: React.FC = () => {
     setIsEditing(false);
     
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setEmailData({ currentEmail: '', newEmail: '' });
     showSnackbar('Changes cancelled', 'info');
   };
 
@@ -213,6 +259,11 @@ const UserProfilePage: React.FC = () => {
       setPasswordData(prev => ({ ...prev, [field]: event.target.value }));
     };
 
+  const handleEmailDataChange = (field: keyof EmailData) => 
+    (event: React.ChangeEvent<HTMLInputElement>): void => {
+      setEmailData(prev => ({ ...prev, [field]: event.target.value }));
+    };
+
   const handleSnackbarClose = (): void => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
@@ -223,16 +274,27 @@ const UserProfilePage: React.FC = () => {
       <Box sx={{ p: 3, minHeight: '100vh', backgroundColor: '#f5f5f5', paddingTop: '80px' }}>
       <StyledCard>
         <CardContent sx={{ p: 4 }}>
-          {/* Header */}
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h4" component="h1" fontWeight="600">
-              User Profile Settings
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <IconButton 
+                onClick={handleBackToHome}
+                sx={{ 
+                  backgroundColor: 'grey.100',
+                  '&:hover': { backgroundColor: 'grey.200' }
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+              <Typography variant="h5" component="h1" fontWeight="500">
+                User Profile Settings
+              </Typography>
+            </Box>
             <Button
               variant={isEditing ? "outlined" : "contained"}
               startIcon={isEditing ? <Cancel /> : <Edit />}
               onClick={() => setIsEditing(!isEditing)}
-              size="large"
+              size="medium"
             >
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </Button>
@@ -242,7 +304,7 @@ const UserProfilePage: React.FC = () => {
             
             <Grid item xs={12} md={5}>
               <Paper elevation={2} sx={{ p: 3, height: 'fit-content' }}>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                   <PhotoCamera sx={{ mr: 1 }} />
                   Profile Image
                 </Typography>
@@ -263,7 +325,7 @@ const UserProfilePage: React.FC = () => {
                     <DropZoneBox {...getRootProps()} isDragActive={isDragActive}>
                       <input {...getInputProps()} />
                       <Upload sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
-                      <Typography variant="body1" color="textSecondary">
+                      <Typography variant="body2" color="textSecondary">
                         {isDragActive
                           ? "Drop the image here..."
                           : "Drag & drop an image here, or click to select"}
@@ -282,7 +344,7 @@ const UserProfilePage: React.FC = () => {
                         startIcon={<PhotoCamera />}
                         onClick={() => setShowWebcam(!showWebcam)}
                         fullWidth
-                        size="large"
+                        size="medium"
                         sx={{ mb: 2 }}
                       >
                         {showWebcam ? 'Hide Camera' : 'Use Camera'}
@@ -336,7 +398,52 @@ const UserProfilePage: React.FC = () => {
                 
                 <Grid item xs={12}>
                   <Paper elevation={2} sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
+                      <Email sx={{ mr: 1 }} />
+                      Change Email Address
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Current Email"
+                          type="email"
+                          value={emailData.currentEmail}
+                          onChange={handleEmailDataChange('currentEmail')}
+                          disabled={!isEditing}
+                          variant={isEditing ? "outlined" : "filled"}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="New Email"
+                          type="email"
+                          value={emailData.newEmail}
+                          onChange={handleEmailDataChange('newEmail')}
+                          disabled={!isEditing}
+                          variant={isEditing ? "outlined" : "filled"}
+                        />
+                      </Grid>
+                      {isEditing && (
+                        <Grid item xs={12}>
+                          <Button
+                            variant="contained"
+                            onClick={handleEmailChange}
+                            disabled={loading || !emailData.currentEmail || !emailData.newEmail}
+                            startIcon={loading ? <CircularProgress size={20} /> : <Email />}
+                          >
+                            Update Email
+                          </Button>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Paper elevation={2} sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                       <Smartphone sx={{ mr: 1 }} />
                       Phone Number
                     </Typography>
@@ -358,7 +465,7 @@ const UserProfilePage: React.FC = () => {
                 
                 <Grid item xs={12}>
                   <Paper elevation={2} sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                       <Security sx={{ mr: 1 }} />
                       Change Password
                     </Typography>
@@ -415,27 +522,27 @@ const UserProfilePage: React.FC = () => {
                 
                 <Grid item xs={12}>
                   <Paper elevation={2} sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom fontWeight="500">
                       Two-Factor Authentication
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body1" sx={{ mr: 2 }}>
+                        <Typography variant="body2" sx={{ mr: 2 }}>
                           Authenticator App Status:
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           {userData.isAuthenticatorSetup ? (
                             <>
                               <CheckCircle sx={{ color: 'success.main', mr: 1 }} />
-                              <Typography variant="body1" color="success.main" fontWeight="600">
-                                Yes - Enabled
+                              <Typography variant="body2" color="success.main" fontWeight="500">
+                                Enabled
                               </Typography>
                             </>
                           ) : (
                             <>
                               <Cancel sx={{ color: 'error.main', mr: 1 }} />
-                              <Typography variant="body1" color="error.main" fontWeight="600">
-                                No - Disabled
+                              <Typography variant="body2" color="error.main" fontWeight="500">
+                                Disabled
                               </Typography>
                             </>
                           )}

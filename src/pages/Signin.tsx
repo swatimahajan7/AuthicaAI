@@ -13,7 +13,6 @@ const Signin = () => {
   const { setCurrentUser, currentUser, users, riskConfig } = useAuthContext();
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<boolean>(false);
-  const [username,setUsername] = useState('');
 
   const [currentStep, setCurrentStep] = useState(AuthMethods.usernamePassword);
   const [allSteps, setAllSteps] = useState<string[]>([AuthMethods.usernamePassword]);
@@ -60,7 +59,6 @@ const Signin = () => {
       if (!isValid) return;
 
       const user = users.find(u => u.username === signinFormRef.current?.getValues().username);
-      setUsername(user?.username || "")
       if (user) {
         const userRiskConfig = riskConfig.find(config => config.risk === user.risk);
         if (userRiskConfig) {
@@ -75,7 +73,7 @@ const Signin = () => {
           setAdminUser(updatedUser.isAdmin || false);
 
           if (userRiskConfig.authMethods.length === 1) {
-            navigate(updatedUser.isAdmin ? "/adminDashboard" : `/userHome/${username}`);
+            navigate(updatedUser.isAdmin ? "/adminDashboard" : `/userHome/${currentUser?.username}`);
           } else {
             setCurrentStep(userRiskConfig.authMethods[1]);
           }
@@ -103,7 +101,7 @@ const Signin = () => {
     if (nextIndex < allSteps.length) {
       setCurrentStep(allSteps[nextIndex]);
     } else {
-      navigate(adminUser ? "/adminDashboard" : `/userHome/${username}`);
+      navigate(adminUser ? "/adminDashboard" : `/userHome/${currentUser?.username}`);
     }
   };
 

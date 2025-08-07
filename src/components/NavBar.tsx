@@ -24,7 +24,7 @@ type ResponsiveAppBarProps = {
 };
 
 const pages = ["Users", "Risk Policy", "Alerts"];
-const settings = ["Logout", "Profile"];
+const settings = ["Profile", "Logout"];
 
 function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, isAdmin }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
