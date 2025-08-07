@@ -53,7 +53,7 @@ const Signin = () => {
     }
   }, [riskConfig]);
 
-  const handleContinue = async () => {
+  const handleContinue = async () => {  
     if (currentStep === AuthMethods.usernamePassword) {
       const isValid = await signinFormRef.current?.validate();
       if (!isValid) return;
@@ -68,12 +68,12 @@ const Signin = () => {
             requireEmailOTP: userRiskConfig.requireEmailOTP,
             requirePhoneOTP: userRiskConfig.requirePhoneOTP,
           };
-          setCurrentUser(updatedUser);
+          await setCurrentUser(updatedUser);
           setAllSteps(userRiskConfig.authMethods);
           setAdminUser(updatedUser.isAdmin || false);
 
           if (userRiskConfig.authMethods.length === 1) {
-            navigate(updatedUser.isAdmin ? "/adminDashboard" : `/userHome/${currentUser?.username}`);
+            navigate(updatedUser.isAdmin ? "/adminDashboard" : `/userHome/${user.username}`);
           } else {
             setCurrentStep(userRiskConfig.authMethods[1]);
           }

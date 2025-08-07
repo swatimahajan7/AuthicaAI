@@ -122,7 +122,7 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
                 mb: 2
               }}
             >
-              {currentUser.name.charAt(0).toUpperCase()}
+              {currentUser?.name.charAt(0).toUpperCase()}
             </Avatar>
             <Typography 
               variant="h4" 
@@ -137,9 +137,7 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
             </Typography>
           </Box>
 
-          {/* User Details Grid */}
           <Grid container spacing={{ xs: 2, sm: 3 }}>
-            {/* Name */}
             <Grid item xs={12}>
               <DetailItem elevation={1}>
                 <Person sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />
@@ -155,7 +153,7 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
                     variant="h6"
                     onClick={handleNameClick}
                   >
-                    {currentUser.name}
+                    {currentUser?.name}
                   </ClickableName>
                 </Box>
               </DetailItem>
@@ -181,7 +179,7 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
                       wordBreak: 'break-all'
                     }}
                   >
-                    {currentUser.email}
+                    {currentUser?.email}
                   </Typography>
                 </Box>
               </DetailItem>

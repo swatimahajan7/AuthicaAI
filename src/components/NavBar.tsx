@@ -15,6 +15,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Badge from "@mui/material/Badge";
 import { NotificationsList, type NotificationItem } from "./NotificationsList";
 import { useNavigate } from "react-router";
+import { useAuthContext } from '../context/globalAuthContext';
 
 type ResponsiveAppBarProps = {
   notifications?: NotificationItem[];
@@ -32,6 +33,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, is
   const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
 
   const navigate = useNavigate();
+  const { setCurrentUser } = useAuthContext();
   const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   const handleNotificationClick = (id: number) => {
@@ -152,6 +154,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, is
                       if (setting === "Profile") {
                         navigate("/userProfile");
                       } else if (setting === "Logout") {
+                        setCurrentUser(null);
                         navigate("/signin");
                       }
                     }}
