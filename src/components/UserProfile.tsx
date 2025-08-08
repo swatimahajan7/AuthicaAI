@@ -194,34 +194,37 @@ const UserProfilePage: React.FC = () => {
 
   const handleSave = async (): Promise<void> => {
     setLoading(true);
-    
-    await new Promise<void>(resolve => setTimeout(resolve, 1500));
-    
-  if (currentUser && setCurrentUser) {
-    const updatedUser = {
-      ...currentUser,
-      email: userData.email,
-      phone: userData.phone,
-    };
-    setCurrentUser(updatedUser);
-    
-    // Update users array in global context
-    setUsers(prevUsers => 
-      prevUsers.map(user => 
-        user.id === currentUser.id 
-          ? updatedUser
-          : user
-      )
-    );
-  }
-    
+
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
+
+    if (currentUser && setCurrentUser) {
+
+      const updatedUser = {
+        id: currentUser.id,
+        name: currentUser.name,
+        username: currentUser.username,
+        password: currentUser.password,
+        email: userData.email,
+        phone: userData.phone,
+        risk: currentUser.risk,
+        ...(currentUser.isAdmin !== undefined && {
+          isAdmin: currentUser.isAdmin,
+        }),
+      };
+
+      setCurrentUser(updatedUser);
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === currentUser.id ? updatedUser : user))
+      );
+    }
+
     setIsEditing(false);
     setLoading(false);
-    showSnackbar('Profile updated successfully!', 'success');
+    showSnackbar("Profile updated successfully!", "success");
   };
 
   const handlePasswordChange = async (): Promise<void> => {
-    
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       showSnackbar('Passwords do not match', 'error');
       return;
@@ -230,26 +233,33 @@ const UserProfilePage: React.FC = () => {
       showSnackbar('Password must be at least 8 characters long', 'error');
       return;
     }
-    
+
     // Check if current password matches
     if (passwordData.currentPassword !== currentUser?.password) {
       showSnackbar('Current password is incorrect', 'error');
       return;
     }
-    
+
     setLoading(true);
-    
+
     await new Promise<void>(resolve => setTimeout(resolve, 1500));
-    
-    // Update password in context
+
+    // Update password in context with clean user object
     if (currentUser && setCurrentUser) {
       const updatedUser = {
-        ...currentUser,
-        password: passwordData.newPassword
+        id: currentUser.id,
+        name: currentUser.name,
+        username: currentUser.username,
+        password: passwordData.newPassword,
+        email: currentUser.email,
+        phone: currentUser.phone,
+        risk: currentUser.risk,
+        ...(currentUser.isAdmin !== undefined && { isAdmin: currentUser.isAdmin })
       };
+
       setCurrentUser(updatedUser);
 
-      // Update users array in global context
+      // Update users array in global context with clean user object
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.id === currentUser.id
@@ -258,6 +268,7 @@ const UserProfilePage: React.FC = () => {
         )
       );
     }
+
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setLoading(false);
     showSnackbar('Password updated successfully!', 'success');
@@ -268,31 +279,39 @@ const UserProfilePage: React.FC = () => {
       showSnackbar('Please fill in both current and new email', 'error');
       return;
     }
-    
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailData.newEmail)) {
       showSnackbar('Please enter a valid email address', 'error');
       return;
     }
-    
+
     if (emailData.currentEmail !== currentUser?.email) {
       showSnackbar('Current email does not match', 'error');
       return;
     }
-    
+
     setLoading(true);
-    
+
     await new Promise<void>(resolve => setTimeout(resolve, 1500));
+
     setUserData(prev => ({ ...prev, email: emailData.newEmail }));
+
     if (currentUser && setCurrentUser) {
       const updatedUser = {
-        ...currentUser,
-        email: emailData.newEmail
+        id: currentUser.id,
+        name: currentUser.name,
+        username: currentUser.username,
+        password: currentUser.password,
+        email: emailData.newEmail,
+        phone: currentUser.phone,
+        risk: currentUser.risk,
+        ...(currentUser.isAdmin !== undefined && { isAdmin: currentUser.isAdmin })
       };
+
       setCurrentUser(updatedUser);
 
-      // Update users array in global context
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.id === currentUser.id
@@ -301,6 +320,7 @@ const UserProfilePage: React.FC = () => {
         )
       );
     }
+
     setEmailData({ currentEmail: '', newEmail: '' });
     setLoading(false);
     showSnackbar('Email updated successfully!', 'success');
@@ -408,7 +428,7 @@ const UserProfilePage: React.FC = () => {
                 <Paper elevation={2} sx={{ p: 3, height: 'fit-content' }}>
                   <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                     <PhotoCamera sx={{ mr: 1 }} />
-                    Profile Image
+                    Face Recognition
                   </Typography>
                   
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
