@@ -4,7 +4,7 @@ import { AuthMethods } from "../constants";
 import AuthenticatorOTP, { type AuthenticatorOTPHandle } from "../components/AuthenticatorOTP";
 import FaceRecognition, { type FaceRecognitionHandle } from "../components/FaceRecognition";
 import EmailMobileOTP, { type EmailMobileOTPHandle } from "../components/EmailMobileOTP";
-import { Button, Box } from "@mui/material";
+import { Box } from "@mui/material";
 import "./Signin.css";
 import SigninForm, { type SigninFormHandle } from "../components/SigninForm";
 import { useAuthContext } from "../context/globalAuthContext";
@@ -115,19 +115,28 @@ const Signin = () => {
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
             borderRadius: "30px",
             overflowY: "scroll",
+            width: '100%',
+            height: '100%',
+            justifyContent: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          <img src="../src/assets/logo.svg" width={200} className="logo" />
-          {currentStep === AuthMethods.usernamePassword && <SigninForm ref={signinFormRef} />}
-          {currentStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef} mode="signin" />}
-          {currentStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode="signin" />}
-          {currentStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode="signin" />}
-        </Box>
-
-        <Box my={2} display="flex" justifyContent="flex-end">
-          <Button variant="contained" onClick={handleContinue}>
-            Continue
-          </Button>
+          <img src="../src/assets/logo.svg" width={150} className="logo" />
+          <img src="../src/assets/AuthicaAI_logo.svg" width={200} className="logo" />
+          {currentStep === AuthMethods.usernamePassword && (
+            <SigninForm ref={signinFormRef} onVerified={handleContinue} />
+          )}
+          {currentStep === AuthMethods.emailMobileOTP && (
+            <EmailMobileOTP ref={emailOtpRef} mode="signin" onVerified={handleContinue} />
+          )}
+          {currentStep === AuthMethods.authenticatorOTP && (
+            <AuthenticatorOTP ref={authenticatorRef} mode="signin" onVerified={handleContinue} />
+          )}
+          {currentStep === AuthMethods.faceRecognition && (
+            <FaceRecognition ref={faceRef} mode="signin" onVerified={handleContinue} />
+          )}
         </Box>
       </div>
     </div>

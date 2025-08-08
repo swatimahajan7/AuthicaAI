@@ -1,12 +1,11 @@
+.signup-form {
+    width: 100%;
+}
+
 .signup-form-title {
     text-align: center;
 }
 
 .reroute-text {
     text-align: center;
-}
-
-.reroute-link {
-    cursor: pointer;
-    color: #1565c0;
 }
