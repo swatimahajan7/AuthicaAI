@@ -30,14 +30,21 @@ const AuthenticatorOTP = forwardRef<AuthenticatorOTPHandle, AuthenticatorOTPProp
             if (otp === mockOTP) {
                 setVerified(true);
                 setError('');
-                onVerified?.();
             } else {
                 setError('Invalid OTP. Please check and try again.');
             }
         };
 
+        const handleContinue = () => {
+            if (verified) {
+                onVerified?.();
+            } else {
+                alert('Please verify OTP first.');
+            }
+        };
+
         return (
-            <Box display="flex" flexDirection="column" alignItems="center" gap={3} mt={4}>
+            <Box display="flex" flexDirection="column" alignItems="center" gap={3} mt={4} sx={{ overflowY: 'scroll' }}>
                 <Typography variant="h6">
                     {mode === 'signin' ? 'Verify with Authenticator App' : 'Set up Authenticator App'}
                 </Typography>
@@ -71,9 +78,16 @@ const AuthenticatorOTP = forwardRef<AuthenticatorOTPHandle, AuthenticatorOTPProp
                     }}
                     sx={{ width: '70%' }}
                 />
-                <Button variant="contained" onClick={handleVerify}>
-                    {mode === 'signin' ? 'Verify' : 'Continue'}
-                </Button>
+
+                <Box display="flex" gap={2}>
+                    <Button variant="outlined" onClick={handleVerify}>
+                        Verify OTP
+                    </Button>
+                    <Button variant="contained" onClick={handleContinue}>
+                        Continue
+                    </Button>
+                </Box>
+
                 {verified && (
                     <Typography color="green" sx={{ mt: 1 }}>
                         Authenticator verified ✅

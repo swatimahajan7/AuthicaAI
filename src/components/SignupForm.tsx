@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { forwardRef, useImperativeHandle } from 'react';
@@ -21,7 +21,11 @@ export type SignupFormHandle = {
     getValues: () => typeof validationSchema.__outputType;
 };
 
-const SignupForm = forwardRef<SignupFormHandle>((_, ref) => {
+interface SignupFormProps {
+    onVerified?: () => void;
+}
+
+const SignupForm = forwardRef<SignupFormHandle, SignupFormProps>(({ onVerified }, ref) => {
     const { values, updateValues } = useAuthContext();
     const navigate = useNavigate()
 
@@ -50,6 +54,21 @@ const SignupForm = forwardRef<SignupFormHandle>((_, ref) => {
                     getValues: () => formik.values,
                 }));
 
+                const handleSignup = async () => {
+                    const errors = await formik.validateForm();
+                    formik.setTouched({
+                        name: true,
+                        username: true,
+                        password: true,
+                        confirmPassword: true,
+                    });
+                    const isValid = Object.keys(errors).length === 0;
+                    if (isValid) {
+                        updateValues(formik.values);
+                        onVerified?.();
+                    }
+                };
+
                 return (
                     <Form className="signup-form">
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
@@ -72,9 +91,14 @@ const SignupForm = forwardRef<SignupFormHandle>((_, ref) => {
                                 <CustomTextField {...formik.getFieldProps('confirmPassword')} label="Confirm Password" type="password" error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)} helperText={formik.touched.confirmPassword && formik.errors.confirmPassword} />
                             </Box>
 
+                            <Button variant="contained" onClick={handleSignup} sx={{ width: '70%', alignSelf: 'center' }}>
+                                Sign Up
+                            </Button>
+
                             <Typography variant="body1" className='reroute-text'>
-                                Already have and account? <a className={'reroute-link'} onClick={() => navigate('/signin')}>Sign-in</a>
+                                Already have an account?
                             </Typography>
+                            <Button variant='outlined' sx={{ width: '70%', alignSelf: 'center' }} onClick={() => navigate('/signin')}>Sign in</Button>
                         </Box>
                     </Form>
                 );

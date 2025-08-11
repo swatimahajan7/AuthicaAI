@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import CustomTextField from './CustomTextField';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useAuthContext } from '../context/globalAuthContext';
 import './SigninForm.css'
 import { useNavigate } from 'react-router';
@@ -12,7 +12,11 @@ export interface SigninFormHandle {
     getValues: () => { username: string; password: string };
 }
 
-const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
+interface SigninFormProps {
+    onVerified?: () => void;
+}
+
+const SigninForm = forwardRef<SigninFormHandle, SigninFormProps>(({ onVerified }, ref) => {
     const { values, updateValues, users, setCurrentUser } = useAuthContext();
     const navigate = useNavigate();
 
@@ -60,8 +64,35 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
         },
     }));
 
+    const handleSignIn = async () => {
+        const errors = await formik.validateForm();
+        formik.setTouched({ username: true, password: true });
+        const isValid = Object.keys(errors).length === 0;
+
+        if (isValid) {
+            const matchedUser = users.find(
+                (u) =>
+                    u.username === formik.values.username &&
+                    u.password === formik.values.password
+            );
+
+            if (!matchedUser) {
+                alert('Invalid username or password');
+                return;
+            }
+
+            setCurrentUser(matchedUser);
+            updateValues(matchedUser);
+            onVerified?.();
+        }
+    };
+
+
     return (
-        <Box display="flex" flexDirection="column" gap={2} maxWidth={400} mx="auto" mt={3}>
+        <Box display="flex" flexDirection="column" gap={2} justifyContent='center' width={'70%'} alignItems='stretch' mt={3}>
+            <Typography variant="h6" className="signin-form-title">
+                Enter your credentials
+            </Typography>
             <CustomTextField
                 name="username"
                 label="Username"
@@ -82,9 +113,12 @@ const SigninForm = forwardRef<SigninFormHandle>((_, ref) => {
                 helperText={formik.touched.password && formik.errors.password}
             />
 
+            <Button variant="contained" onClick={handleSignIn}>Sign In</Button>
+
             <Typography variant="body1" className='reroute-text'>
-                No account? Register here <a className={'reroute-link'} onClick={() => navigate('/signup')}>Sign-up</a>
+                Don't have an account yet?
             </Typography>
+            <Button variant='outlined' onClick={() => navigate('/signup')}>Sign up</Button>
         </Box>
     );
 });

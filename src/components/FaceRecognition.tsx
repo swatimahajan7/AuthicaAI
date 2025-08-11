@@ -21,17 +21,25 @@ const videoConstraints = {
 const FaceRecognition = forwardRef<FaceRecognitionHandle, FaceRecognitionProps>(({ mode = 'signup', onVerified }, ref) => {
   const webcamRef = useRef<Webcam>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [proceeded, setProceeded] = useState<boolean>(false);
 
   const capture = () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setCapturedImage(imageSrc);
-      onVerified?.();
+      setProceeded(false);
     }
   };
 
+  const handleProceed = () => {
+    setProceeded(true);
+    setTimeout(() => {
+      onVerified?.();
+    }, 0);
+  };
+
   useImperativeHandle(ref, () => ({
-    isCaptured: () => !!capturedImage,
+    isCaptured: () => !!capturedImage && proceeded,
     getImage: () => capturedImage
   }));
 
@@ -84,14 +92,19 @@ const FaceRecognition = forwardRef<FaceRecognitionHandle, FaceRecognitionProps>(
       </Box>
 
       <Box display="flex" gap={2}>
-        {capturedImage ? (
-          <Button variant="outlined" onClick={() => setCapturedImage(null)}>
-            Retake Photo
-          </Button>
-        ) : (
+        {!capturedImage ? (
           <Button variant="contained" onClick={capture}>
             Capture Photo
           </Button>
+        ) : (
+          <>
+            <Button variant="outlined" onClick={() => setCapturedImage(null)}>
+              Retake Photo
+            </Button>
+            <Button variant="contained" onClick={handleProceed}>
+              Proceed
+            </Button>
+          </>
         )}
       </Box>
     </Box>
