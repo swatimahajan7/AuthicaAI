@@ -159,7 +159,6 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
               </DetailItem>
             </Grid>
 
-            {/* Email */}
             <Grid item xs={12}>
               <DetailItem elevation={1}>
                 <Email sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />
@@ -185,7 +184,6 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
               </DetailItem>
             </Grid>
 
-            {/* Signup Date */}
             <Grid item xs={12}>
               <DetailItem elevation={1}>
                 <CalendarToday sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Navbar from "../components/NavBar";
 import { useAuthContext } from '../context/globalAuthContext';
 import { useNavigate } from "react-router";
+import AuthenticatorOTP, { type AuthenticatorOTPHandle } from "../components/AuthenticatorOTP";
 import {
   Box,
   Card,
@@ -17,7 +18,11 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
-  styled
+  styled,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import type { AlertColor } from '@mui/material';
 import {
@@ -30,18 +35,13 @@ import {
   Security,
   Smartphone,
   ArrowBack,
-  Email
+  Email,
+  Close
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import type { FileRejection } from 'react-dropzone';
 import Webcam from 'react-webcam';
-
-interface UserData {
-  email: string;
-  phone: string;
-  profileImage?: string | null;
-  isAuthenticatorSetup: boolean;
-}
+import type { User } from '../context/globalAuthContext';
 
 interface PasswordData {
   currentPassword: string;
@@ -73,7 +73,9 @@ interface DropZoneBoxProps {
   isDragActive: boolean;
 }
 
-const DropZoneBox = styled(Box)<DropZoneBoxProps>(({ theme, isDragActive }) => ({
+const DropZoneBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isDragActive',
+})<DropZoneBoxProps>(({ theme, isDragActive }) => ({
   border: `2px dashed ${isDragActive ? theme.palette.primary.main : theme.palette.grey[300]}`,
   borderRadius: theme.spacing(1),
   padding: theme.spacing(4),
@@ -102,18 +104,13 @@ const UserProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [showWebcam, setShowWebcam] = useState<boolean>(false);
+  const [showAuthenticatorSetup, setShowAuthenticatorSetup] = useState<boolean>(false);
   const navigate = useNavigate();
+  
   const [snackbar, setSnackbar] = useState<SnackbarState>({ 
     open: false, 
     message: '', 
     severity: 'success' 
-  });
-  
-  const [userData, setUserData] = useState<UserData>({
-    email: '',
-    phone: '',
-    profileImage: null,
-    isAuthenticatorSetup: true
   });
   
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -129,45 +126,56 @@ const UserProfilePage: React.FC = () => {
   
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Load current user data on component mount
-  useEffect(() => {
-    if (currentUser) {
-      setUserData({
-        email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        profileImage: null,
-        isAuthenticatorSetup: false
-      });
-    }
-  }, [currentUser]);
+  const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
 
   // Navigation function
   const handleBackToHome = (): void => {
     if (currentUser?.username) {
-      // Navigate back to user's home page
       navigate(`/userHome/${currentUser.username}`);
     } else {
       navigate('/signin')
     }
   };
 
-  // Drag and drop configuration
+  const updateCurrentUser = (updates: Partial<User>): void => {
+    if (currentUser && setCurrentUser) {
+      const updatedUser: User = {
+        id: currentUser.id,
+        name: currentUser.name,
+        username: currentUser.username,
+        password: currentUser.password,
+        email: currentUser.email,
+        phone: currentUser.phone,
+        risk: currentUser.risk,
+        faceRecognition: currentUser.faceRecognition,
+        authenticatorEnabled: currentUser.authenticatorEnabled,
+        ...(currentUser.isAdmin !== undefined && { isAdmin: currentUser.isAdmin }),
+        ...updates
+      };
+
+      setCurrentUser(updatedUser);
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === currentUser.id ? updatedUser : user))
+      );
+    }
+  };
+
   const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
     const file = acceptedFiles[0];
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
-          setUserData(prev => ({ ...prev, profileImage: e.target!.result as string }));
-          showSnackbar('Profile image uploaded successfully!', 'success');
+          updateCurrentUser({ faceRecognition: e.target!.result as string });
+          showSnackbar('Face recognition image uploaded successfully!', 'success');
         }
       };
       reader.readAsDataURL(file);
     } else {
       showSnackbar('Please upload a valid image file', 'error');
     }
-  }, []);
+  }, [currentUser]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -178,15 +186,15 @@ const UserProfilePage: React.FC = () => {
     maxSize: 5242880 // 5MB
   });
 
-  // Webcam capture function
+  
   const captureImage = useCallback((): void => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
-      setUserData(prev => ({ ...prev, profileImage: imageSrc }));
+      updateCurrentUser({ faceRecognition: imageSrc });
       setShowWebcam(false);
-      showSnackbar('Image captured successfully!', 'success');
+      showSnackbar('Face recognition image captured successfully!', 'success');
     }
-  }, []);
+  }, [currentUser]);
 
   const showSnackbar = (message: string, severity: AlertColor = 'success'): void => {
     setSnackbar({ open: true, message, severity });
@@ -194,31 +202,7 @@ const UserProfilePage: React.FC = () => {
 
   const handleSave = async (): Promise<void> => {
     setLoading(true);
-
     await new Promise<void>((resolve) => setTimeout(resolve, 1500));
-
-    if (currentUser && setCurrentUser) {
-
-      const updatedUser = {
-        id: currentUser.id,
-        name: currentUser.name,
-        username: currentUser.username,
-        password: currentUser.password,
-        email: userData.email,
-        phone: userData.phone,
-        risk: currentUser.risk,
-        ...(currentUser.isAdmin !== undefined && {
-          isAdmin: currentUser.isAdmin,
-        }),
-      };
-
-      setCurrentUser(updatedUser);
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => (user.id === currentUser.id ? updatedUser : user))
-      );
-    }
-
     setIsEditing(false);
     setLoading(false);
     showSnackbar("Profile updated successfully!", "success");
@@ -234,40 +218,15 @@ const UserProfilePage: React.FC = () => {
       return;
     }
 
-    // Check if current password matches
     if (passwordData.currentPassword !== currentUser?.password) {
       showSnackbar('Current password is incorrect', 'error');
       return;
     }
 
     setLoading(true);
-
     await new Promise<void>(resolve => setTimeout(resolve, 1500));
 
-    // Update password in context with clean user object
-    if (currentUser && setCurrentUser) {
-      const updatedUser = {
-        id: currentUser.id,
-        name: currentUser.name,
-        username: currentUser.username,
-        password: passwordData.newPassword,
-        email: currentUser.email,
-        phone: currentUser.phone,
-        risk: currentUser.risk,
-        ...(currentUser.isAdmin !== undefined && { isAdmin: currentUser.isAdmin })
-      };
-
-      setCurrentUser(updatedUser);
-
-      // Update users array in global context with clean user object
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === currentUser.id
-            ? updatedUser
-            : user
-        )
-      );
-    }
+    updateCurrentUser({ password: passwordData.newPassword });
 
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setLoading(false);
@@ -280,7 +239,6 @@ const UserProfilePage: React.FC = () => {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailData.newEmail)) {
       showSnackbar('Please enter a valid email address', 'error');
@@ -293,33 +251,9 @@ const UserProfilePage: React.FC = () => {
     }
 
     setLoading(true);
-
     await new Promise<void>(resolve => setTimeout(resolve, 1500));
 
-    setUserData(prev => ({ ...prev, email: emailData.newEmail }));
-
-    if (currentUser && setCurrentUser) {
-      const updatedUser = {
-        id: currentUser.id,
-        name: currentUser.name,
-        username: currentUser.username,
-        password: currentUser.password,
-        email: emailData.newEmail,
-        phone: currentUser.phone,
-        risk: currentUser.risk,
-        ...(currentUser.isAdmin !== undefined && { isAdmin: currentUser.isAdmin })
-      };
-
-      setCurrentUser(updatedUser);
-
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === currentUser.id
-            ? updatedUser
-            : user
-        )
-      );
-    }
+    updateCurrentUser({ email: emailData.newEmail });
 
     setEmailData({ currentEmail: '', newEmail: '' });
     setLoading(false);
@@ -327,33 +261,38 @@ const UserProfilePage: React.FC = () => {
   };
 
   const setupAuthenticator = (): void => {
-    setUserData(prev => ({ ...prev, isAuthenticatorSetup: true }));
-    showSnackbar('Authenticator app setup initiated!', 'info');
+    setShowAuthenticatorSetup(true);
+  };
+
+  const handleAuthenticatorSetupComplete = (): void => {
+    if (authenticatorRef.current?.isVerified()) {
+      updateCurrentUser({ authenticatorEnabled: true });
+      setShowAuthenticatorSetup(false);
+      showSnackbar('Authenticator app setup completed successfully!', 'success');
+    } else {
+      showSnackbar('Please complete the verification process first', 'error');
+    }
+  };
+
+  const handleAuthenticatorSetupCancel = (): void => {
+    setShowAuthenticatorSetup(false);
+    showSnackbar('Authenticator setup cancelled', 'info');
   };
 
   const removeAuthenticator = (): void => {
-    setUserData(prev => ({ ...prev, isAuthenticatorSetup: false }));
+    updateCurrentUser({ authenticatorEnabled: false });
     showSnackbar('Authenticator app removed!', 'warning');
   };
 
   const handleCancel = (): void => {
     setIsEditing(false);
-    // Reset to original data
-    if (currentUser) {
-      setUserData({
-        email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        profileImage:  null,
-        isAuthenticatorSetup: false
-      });
-    }
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setEmailData({ currentEmail: '', newEmail: '' });
     showSnackbar('Changes cancelled', 'info');
   };
 
   const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    setUserData(prev => ({ ...prev, phone: event.target.value }));
+    updateCurrentUser({ phone: event.target.value });
   };
 
   const handlePasswordDataChange = (field: keyof PasswordData) => 
@@ -370,7 +309,6 @@ const UserProfilePage: React.FC = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  // Show loading if no current user
   if (!currentUser) {
     return (
       <div>
@@ -433,10 +371,10 @@ const UserProfilePage: React.FC = () => {
                   
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
                     <Avatar
-                      src={userData.profileImage || undefined}
+                      src={currentUser.faceRecognition || undefined}
                       sx={{ width: 150, height: 150, fontSize: '3rem' }}
                     >
-                      {!userData.profileImage && currentUser.name.charAt(0).toUpperCase()}
+                      {!currentUser.faceRecognition && currentUser.name.charAt(0).toUpperCase()}
                     </Avatar>
                   </Box>
 
@@ -524,7 +462,7 @@ const UserProfilePage: React.FC = () => {
                       
                       {!isEditing ? (
                         <Typography variant="body1" sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
-                          {userData.email}
+                          {currentUser.email}
                         </Typography>
                       ) : (
                         <Grid container spacing={2}>
@@ -573,13 +511,13 @@ const UserProfilePage: React.FC = () => {
                       
                       {!isEditing ? (
                         <Typography variant="body1" sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
-                          {userData.phone}
+                          {currentUser.phone}
                         </Typography>
                       ) : (
                         <TextField
                           fullWidth
                           label="Phone Number"
-                          value={userData.phone}
+                          value={currentUser.phone}
                           onChange={handlePhoneChange}
                           variant="outlined"
                           type="tel"
@@ -647,11 +585,11 @@ const UserProfilePage: React.FC = () => {
                     </Paper>
                   </Grid>
 
-                  
+                  {/* Multi-Factor Authentication Section */}
                   <Grid item xs={12}>
                     <Paper elevation={2} sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom fontWeight="500">
-                        Two-Factor Authentication
+                        Multi-Factor Authentication
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -659,7 +597,7 @@ const UserProfilePage: React.FC = () => {
                             Authenticator App Status:
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {userData.isAuthenticatorSetup ? (
+                            {currentUser.authenticatorEnabled ? (
                               <>
                                 <CheckCircle sx={{ color: 'success.main', mr: 1 }} />
                                 <Typography variant="body2" color="success.main" fontWeight="500">
@@ -680,7 +618,7 @@ const UserProfilePage: React.FC = () => {
                       
                       {isEditing && (
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                          {!userData.isAuthenticatorSetup ? (
+                          {!currentUser.authenticatorEnabled ? (
                             <Button
                               variant="contained"
                               color="primary"
@@ -704,7 +642,6 @@ const UserProfilePage: React.FC = () => {
                     </Paper>
                   </Grid>
 
-                  
                   {isEditing && (
                     <Grid item xs={12}>
                       <Box sx={{ pt: 2 }}>
@@ -727,7 +664,43 @@ const UserProfilePage: React.FC = () => {
           </CardContent>
         </StyledCard>
 
-        
+        <Dialog 
+          open={showAuthenticatorSetup} 
+          onClose={handleAuthenticatorSetupCancel}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Setup Authenticator App
+            <IconButton onClick={handleAuthenticatorSetupCancel}>
+              <Close />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <AuthenticatorOTP 
+              ref={authenticatorRef}
+              mode="signup"
+              onVerified={() => {
+                console.log('Authenticator verified in dialog');
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 1 }}>
+            <Button 
+              onClick={handleAuthenticatorSetupCancel}
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleAuthenticatorSetupComplete}
+            >
+              Complete Setup
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Snackbar
           open={snackbar.open}
           autoHideDuration={4000}
