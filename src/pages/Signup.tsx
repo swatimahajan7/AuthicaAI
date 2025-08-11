@@ -20,6 +20,24 @@ const Signup = () => {
 
     const { values, setUsers, currentUser, setCurrentUser, riskConfig } = useAuthContext();
 
+
+    const updateUserData = (updates: Partial<User>) => {
+        if (!currentUser) return;
+
+        const updatedUser: User = {
+            ...currentUser,
+            ...updates
+        };
+
+        setUsers(prev =>
+            prev.map(user =>
+                user.id === currentUser.id ? updatedUser : user
+            )
+        );
+
+        setCurrentUser(updatedUser);
+    };
+
     const handleBack = () => {
         const prevIndex = AuthSteps.indexOf(currentStep) - 1;
         if (prevIndex >= 0) {
@@ -42,7 +60,9 @@ const Signup = () => {
                 password: formValues!.password,
                 email: '',
                 phone: '',
-                risk: selectedRisk.risk
+                risk: selectedRisk.risk,
+                authenticatorEnabled: false,
+                faceRecognition: ''
             };
 
             setUsers(prev => [...prev, newUser]);
@@ -55,27 +75,33 @@ const Signup = () => {
                 return;
             }
 
-            setUsers(prev =>
-                prev.map(user =>
-                    user.id === currentUser?.id
-                        ? { ...user, email: values.email, phone: values.phone }
-                        : user
-                )
-            );
-
-            setCurrentUser(prev =>
-                prev ? { ...prev, email: values.email, phone: values.phone } : prev
-            );
+            updateUserData({
+                email: values.email,
+                phone: values.phone
+            });
         }
 
-        if (currentStep === AuthMethods.authenticatorOTP && !authenticatorRef.current?.isVerified()) {
-            alert('Please verify the Authenticator OTP before continuing.');
-            return;
+        if (currentStep === AuthMethods.authenticatorOTP) {
+            if (!authenticatorRef.current?.isVerified()) {
+                alert('Please verify the Authenticator OTP before continuing.');
+                return;
+            }
+
+            updateUserData({
+                authenticatorEnabled: true
+            });
         }
 
-        if (currentStep === AuthMethods.faceRecognition && !faceRef.current?.isCaptured()) {
-            alert('Please capture your face before continuing.');
-            return;
+        if (currentStep === AuthMethods.faceRecognition) {
+            if (!faceRef.current?.isCaptured()) {
+                alert('Please capture your face before continuing.');
+                return;
+            }
+
+            const capturedImage = faceRef.current?.getImage();
+            updateUserData({
+                faceRecognition: capturedImage || ''
+            });
         }
 
         const nextIndex = AuthSteps.indexOf(currentStep) + 1;
