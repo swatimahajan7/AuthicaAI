@@ -124,7 +124,7 @@ const Signin = () => {
           }}
         >
           <img src="../src/assets/logo.svg" width={150} className="logo" />
-          <img src="../src/assets/AuthicaAI_logo.svg" width={200} className="logo" />
+          <img src="../src/assets/darkAuthica.svg" width={210} className="logo" style={{ marginTop: "-70px", marginBottom:"-70px", marginLeft: "15px"}} />
           {currentStep === AuthMethods.usernamePassword && (
             <SigninForm ref={signinFormRef} onVerified={handleContinue} />
           )}
