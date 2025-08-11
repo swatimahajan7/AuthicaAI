@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Box, Button, Typography, TextField, Divider } from '@mui/material';
 import { useAuthContext } from '../context/globalAuthContext';
 
@@ -8,9 +8,10 @@ export type EmailMobileOTPHandle = {
 
 interface EmailMobileOTPProps {
     mode?: 'signup' | 'signin';
+    onVerified?: () => void;
 }
 
-const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ mode = 'signup' }, ref) => {
+const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ mode = 'signup', onVerified }, ref) => {
     const { values, updateValues, currentUser, riskConfig } = useAuthContext();
 
     const currentRiskConfig = currentUser
@@ -43,6 +44,15 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
         }
     }));
 
+    useEffect(() => {
+        if (
+            ((showEmail && emailVerified) || !showEmail) &&
+            ((showPhone && phoneVerified) || !showPhone)
+        ) {
+            onVerified?.();
+        }
+    }, [emailVerified, phoneVerified]);
+
     const verifyEmail = () => {
         if (emailInputCode === emailVerificationCode) {
             setEmailVerified(true);
@@ -62,7 +72,7 @@ const EmailMobileOTP = forwardRef<EmailMobileOTPHandle, EmailMobileOTPProps>(({ 
     };
 
     return (
-        <Box display="flex" flexDirection="column" gap={4} mt={3}>
+        <Box display="flex" flexDirection="column" width={'100%'} gap={4} mt={3}>
             {/* Email Section */}
             {showEmail && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

@@ -4,7 +4,7 @@ import './Signup.css';
 import SignupForm, { type SignupFormHandle } from '../components/SignupForm';
 import AuthenticatorOTP, { type AuthenticatorOTPHandle } from '../components/AuthenticatorOTP';
 import EmailMobileOTP, { type EmailMobileOTPHandle } from '../components/EmailMobileOTP';
-import { Button, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import FaceRecognition, { type FaceRecognitionHandle } from '../components/FaceRecognition';
 import RegistrationSuccess from '../components/RegistrationSuccess';
 import { useAuthContext, type User } from '../context/globalAuthContext';
@@ -95,28 +95,27 @@ const Signup = () => {
                             backgroundColor: '#f0f8ff',
                             paddingY: '50px',
                             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                            borderRadius: '30px',
-                            overflowY: "scroll"
+                            height: '100%',
+                            overflowY: "scroll",
+                            display: 'flex',
+                            justifyContent: 'center',
+                            flexDirection: 'column',
+                            alignItems: 'center',
                         }}>
-                            <img src='../src/assets/logo.svg' width={200} className='logo' />
-                            {currentStep === AuthMethods.usernamePassword && <SignupForm ref={signupFormRef} />}
-                            {currentStep === AuthMethods.emailMobileOTP && <EmailMobileOTP ref={emailOtpRef} mode='signup' />}
-                            {currentStep === AuthMethods.authenticatorOTP && <AuthenticatorOTP ref={authenticatorRef} mode='signup' />}
-                            {currentStep === AuthMethods.faceRecognition && <FaceRecognition ref={faceRef} mode='signup' />}
-                        </Box>
-
-                        <Box my={2} display="flex" justifyContent="space-between">
-                            <Button
-                                variant="outlined"
-                                onClick={handleBack}
-                                disabled={AuthSteps.indexOf(currentStep) === 0}
-                                sx={{ visibility: AuthSteps.indexOf(currentStep) === 0 ? 'hidden' : 'visible' }}
-                            >
-                                Back
-                            </Button>
-                            <Button variant="contained" onClick={handleContinue}>
-                                Continue
-                            </Button>
+                            <img src='../src/assets/logo.svg' width={150} className='logo' />
+                            <img src="../src/assets/AuthicaAI_logo.svg" width={200} className="logo" />
+                            {currentStep === AuthMethods.usernamePassword && (
+                                <SignupForm ref={signupFormRef} onVerified={handleContinue} />
+                            )}
+                            {currentStep === AuthMethods.emailMobileOTP && (
+                                <EmailMobileOTP ref={emailOtpRef} mode='signup' onVerified={handleContinue} />
+                            )}
+                            {currentStep === AuthMethods.authenticatorOTP && (
+                                <AuthenticatorOTP ref={authenticatorRef} mode='signup' onVerified={handleContinue} />
+                            )}
+                            {currentStep === AuthMethods.faceRecognition && (
+                                <FaceRecognition ref={faceRef} mode='signup' onVerified={handleContinue} />
+                            )}
                         </Box>
                     </>
                 ) : (

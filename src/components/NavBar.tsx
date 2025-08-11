@@ -45,21 +45,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect }: 
       <AppBar position="static" color="primary">
         <Container maxWidth={false}>
           <Toolbar disableGutters>
-            <Typography
-              variant="h5"
-              noWrap
-              sx={{
-                mr: 2,
-                display: { xs: "none", md: "flex" },
-                fontFamily: "Lato, sans-serif",
-                fontWeight: 900,
-                color: "#3b354bff",
-                letterSpacing: "1px",
-                fontSize: { xs: "1.25rem", md: "2rem" },
-              }}
-            >
-              AuthicaAI
-            </Typography>
+            <img src="../src/assets/AuthicaAI_logo.svg" width={200} />
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
               <IconButton size="large" onClick={(e) => setAnchorElNav(e.currentTarget)} color="inherit">
