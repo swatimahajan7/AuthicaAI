@@ -106,13 +106,13 @@ const UserProfilePage: React.FC = () => {
   const [showWebcam, setShowWebcam] = useState<boolean>(false);
   const [showAuthenticatorSetup, setShowAuthenticatorSetup] = useState<boolean>(false);
   const navigate = useNavigate();
-  
-  const [snackbar, setSnackbar] = useState<SnackbarState>({ 
-    open: false, 
-    message: '', 
-    severity: 'success' 
+
+  const [snackbar, setSnackbar] = useState<SnackbarState>({
+    open: false,
+    message: '',
+    severity: 'success'
   });
-  
+
   const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: '',
     newPassword: '',
@@ -123,7 +123,7 @@ const UserProfilePage: React.FC = () => {
     currentEmail: '',
     newEmail: ''
   });
-  
+
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const authenticatorRef = useRef<AuthenticatorOTPHandle>(null);
@@ -186,7 +186,7 @@ const UserProfilePage: React.FC = () => {
     maxSize: 5242880 // 5MB
   });
 
-  
+
   const captureImage = useCallback((): void => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
@@ -295,12 +295,12 @@ const UserProfilePage: React.FC = () => {
     updateCurrentUser({ phone: event.target.value });
   };
 
-  const handlePasswordDataChange = (field: keyof PasswordData) => 
+  const handlePasswordDataChange = (field: keyof PasswordData) =>
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       setPasswordData(prev => ({ ...prev, [field]: event.target.value }));
     };
 
-  const handleEmailDataChange = (field: keyof EmailData) => 
+  const handleEmailDataChange = (field: keyof EmailData) =>
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       setEmailData(prev => ({ ...prev, [field]: event.target.value }));
     };
@@ -312,16 +312,16 @@ const UserProfilePage: React.FC = () => {
   if (!currentUser) {
     return (
       <div>
-        <Box sx={{ 
+        <Box sx={{
           display: 'flex',
-          flexDirection:"column",
-          justifyContent: 'center', 
-          alignItems: 'center', 
+          flexDirection: "column",
+          justifyContent: 'center',
+          alignItems: 'center',
           minHeight: '100vh',
           paddingTop: '80px'
         }}>
           <Typography variant="h6">Please sign in to view your profile</Typography>
-          <Button variant="contained" onClick={() =>{ navigate('/signin') }}>
+          <Button variant="contained" onClick={() => { navigate('/signin') }}>
             Sign In
           </Button>
         </Box>
@@ -332,14 +332,14 @@ const UserProfilePage: React.FC = () => {
   return (
     <div>
       <Navbar isAdmin={false} />
-      <Box sx={{ p: 3, minHeight: '100vh', backgroundColor: '#f5f5f5', paddingTop: '80px' }}>
+      <Box sx={{ p: 3, minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
         <StyledCard>
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <IconButton 
+                <IconButton
                   onClick={handleBackToHome}
-                  sx={{ 
+                  sx={{
                     backgroundColor: 'grey.100',
                     '&:hover': { backgroundColor: 'grey.200' }
                   }}
@@ -361,14 +361,14 @@ const UserProfilePage: React.FC = () => {
             </Box>
 
             <Grid container spacing={4}>
-              
+
               <Grid item xs={12} md={5}>
                 <Paper elevation={2} sx={{ p: 3, height: 'fit-content' }}>
                   <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                     <PhotoCamera sx={{ mr: 1 }} />
                     Face Recognition
                   </Typography>
-                  
+
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
                     <Avatar
                       src={currentUser.faceRecognition || undefined}
@@ -449,17 +449,17 @@ const UserProfilePage: React.FC = () => {
                 </Paper>
               </Grid>
 
-              
+
               <Grid item xs={12} md={7}>
                 <Grid container spacing={3}>
-                  
+
                   <Grid item xs={12}>
                     <Paper elevation={2} sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontWeight: '500' }}>
                         <Email sx={{ mr: 1 }} />
                         Email Address
                       </Typography>
-                      
+
                       {!isEditing ? (
                         <Typography variant="body1" sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
                           {currentUser.email}
@@ -500,7 +500,7 @@ const UserProfilePage: React.FC = () => {
                       )}
                     </Paper>
                   </Grid>
-                  
+
                   {/* Phone Section */}
                   <Grid item xs={12}>
                     <Paper elevation={2} sx={{ p: 3 }}>
@@ -508,7 +508,7 @@ const UserProfilePage: React.FC = () => {
                         <Smartphone sx={{ mr: 1 }} />
                         Phone Number
                       </Typography>
-                      
+
                       {!isEditing ? (
                         <Typography variant="body1" sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
                           {currentUser.phone}
@@ -533,7 +533,7 @@ const UserProfilePage: React.FC = () => {
                         <Security sx={{ mr: 1 }} />
                         Password
                       </Typography>
-                      
+
                       {!isEditing ? (
                         <Typography variant="body1" sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
                           ••••••••
@@ -615,7 +615,7 @@ const UserProfilePage: React.FC = () => {
                           </Box>
                         </Box>
                       </Box>
-                      
+
                       {isEditing && (
                         <Box sx={{ display: 'flex', gap: 2 }}>
                           {!currentUser.authenticatorEnabled ? (
@@ -664,8 +664,8 @@ const UserProfilePage: React.FC = () => {
           </CardContent>
         </StyledCard>
 
-        <Dialog 
-          open={showAuthenticatorSetup} 
+        <Dialog
+          open={showAuthenticatorSetup}
           onClose={handleAuthenticatorSetupCancel}
           maxWidth="sm"
           fullWidth
@@ -677,7 +677,7 @@ const UserProfilePage: React.FC = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-            <AuthenticatorOTP 
+            <AuthenticatorOTP
               ref={authenticatorRef}
               mode="signup"
               onVerified={() => {
@@ -686,14 +686,14 @@ const UserProfilePage: React.FC = () => {
             />
           </DialogContent>
           <DialogActions sx={{ p: 3, pt: 1 }}>
-            <Button 
+            <Button
               onClick={handleAuthenticatorSetupCancel}
               variant="outlined"
             >
               Cancel
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleAuthenticatorSetupComplete}
             >
               Complete Setup
@@ -707,8 +707,8 @@ const UserProfilePage: React.FC = () => {
           onClose={handleSnackbarClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert 
-            onClose={handleSnackbarClose} 
+          <Alert
+            onClose={handleSnackbarClose}
             severity={snackbar.severity}
             variant="filled"
           >
