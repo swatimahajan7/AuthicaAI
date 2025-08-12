@@ -9,81 +9,55 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useAuthContext } from '../context/globalAuthContext';
 
 const Dashboard = () => {
-
   const { users, setUsers, riskConfig } = useAuthContext();
 
   const tableUsers = users.map(user => ({
-    id: user.id,
     name: user.name,
+    username: user.username,
     email: user.email,
+    phone: user.phone,
+    authenticatorRegistered: user.authenticatorEnabled ?? false,
+    faceRegistered: Boolean(user.faceRecognition),
     signupDate: '2024-01-15',
-    status: 'Active',
     risk: user.risk
   }));
 
-  interface User {
-    id: number;
+  interface TableUser {
     name: string;
+    username: string;
     email: string;
+    phone: string;
+    authenticatorRegistered: boolean;
+    faceRegistered: boolean;
     signupDate: string;
-    status: 'Active' | 'Inactive' | 'Pending' | string;
     risk: 'Severe' | 'Medium' | 'High' | string;
   }
-
-  const getStatusColor = (status: User['status']): 'success' | 'error' | 'warning' | 'default' => {
-    switch (status) {
-      case 'Active':
-        return 'success';
-      case 'Inactive':
-        return 'error';
-      case 'Pending':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
 
   const getRiskStyles = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'medium':
-        return {
-          backgroundColor: '#ffebee',
-          color: '#c62828',
-          border: '1px solid #ef9a9a'
-        };
+        return { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a' };
       case 'high':
-        return {
-          backgroundColor: '#e57373',
-          color: '#ffffff',
-          border: '1px solid #f44336'
-        };
+        return { backgroundColor: '#e57373', color: '#ffffff', border: '1px solid #f44336' };
       case 'severe':
-        return {
-          backgroundColor: '#c62828',
-          color: '#ffffff',
-          border: '1px solid #b71c1c'
-        };
+        return { backgroundColor: '#c62828', color: '#ffffff', border: '1px solid #b71c1c' };
       default:
-        return {
-          backgroundColor: '#f5f5f5',
-          color: '#666666',
-          border: '1px solid #cccccc',
-        };
+        return { backgroundColor: '#f5f5f5', color: '#666666', border: '1px solid #cccccc' };
     }
   };
 
-  const handleRowUpdate = (newRow: User) => {
-    const config = riskConfig.find(c => c.risk === newRow.risk as 'Medium' | 'High' | 'Severe');
+  const handleRowUpdate = (newRow: TableUser) => {
+    const config = riskConfig.find(c => c.risk === (newRow.risk as 'Medium' | 'High' | 'Severe'));
 
     const updatedUsers = users.map(user =>
-      user.id === newRow.id
+      user.username === newRow.username
         ? {
           ...user,
           risk: newRow.risk as 'Medium' | 'High' | 'Severe',
           authMethods: config?.authMethods || [],
           requireEmailOTP: config?.requireEmailOTP ?? false,
           requirePhoneOTP: config?.requirePhoneOTP ?? false,
-        }
+        } as any
         : user
     );
 
@@ -91,53 +65,40 @@ const Dashboard = () => {
     return newRow;
   };
 
-  const columns: GridColDef<User>[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      flex: 0.5,
-      type: 'number',
-      align: 'center',
-      headerAlign: 'center'
-    },
+  const columns: GridColDef<TableUser>[] = [
     {
       field: 'name',
       headerName: 'Name',
-      flex: 1,
+      flex: 1.2,
       renderCell: (params: any) => (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar sx={{ width: 32, height: 32, mr: 2, fontSize: 14 }}>
-            {params.value.split(' ').map((n: any) => n[0]).join('')}
-          </Avatar>
           {params.value}
         </Box>
       ),
     },
+    { field: 'username', headerName: 'Username', flex: 1 },
+    { field: 'email', headerName: 'Email', flex: 1.5 },
+    { field: 'phone', headerName: 'Phone', flex: 1 },
     {
-      field: 'email',
-      headerName: 'Email',
-      flex: 2,
-    },
-    {
-      field: 'signupDate',
-      headerName: 'Signup Date',
-      flex: 1,
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      flex: 1,
+      field: 'authenticatorRegistered',
+      headerName: 'Authenticator registered?',
+      flex: 1.2,
       renderCell: (params: any) => (
-        <Chip
-          label={params.value}
-          color={getStatusColor(params.value)}
-          size="small"
-        />
+        <Chip label={params.value ? 'Yes' : 'No'} color={params.value ? 'success' : 'default'} size="small" />
       ),
     },
     {
+      field: 'faceRegistered',
+      headerName: 'Face registered?',
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip label={params.value ? 'Yes' : 'No'} color={params.value ? 'success' : 'default'} size="small" />
+      ),
+    },
+    { field: 'signupDate', headerName: 'Signed-up date', flex: 1 },
+    {
       field: 'risk',
-      headerName: 'Risk',
+      headerName: 'Risk level',
       flex: 1,
       editable: true,
       type: 'singleSelect',
@@ -147,11 +108,7 @@ const Dashboard = () => {
           label={params.value}
           size="small"
           variant="outlined"
-          sx={{
-            textTransform: 'capitalize',
-            fontWeight: 500,
-            ...getRiskStyles(params.value),
-          }}
+          sx={{ textTransform: 'capitalize', fontWeight: 500, ...getRiskStyles(params.value) }}
         />
       ),
     },
@@ -169,23 +126,16 @@ const Dashboard = () => {
             rows={tableUsers}
             columns={columns}
             processRowUpdate={handleRowUpdate}
-            getRowId={(row) => row.id}
+            getRowId={(row) => row.username}
             checkboxSelection
             disableRowSelectionOnClick
             sx={{
-              '& .MuiDataGrid-cell:hover': {
-                color: 'primary.main',
-              },
-              '& .MuiDataGrid-row:hover': {
-                backgroundColor: '#f0f0f0',
-              },
-              '.MuiDataGrid-main': {
-                minHeight: 500,
-              }
+              '& .MuiDataGrid-cell:hover': { color: 'primary.main' },
+              '& .MuiDataGrid-row:hover': { backgroundColor: '#f0f0f0' },
+              '.MuiDataGrid-main': { minHeight: 500 },
             }}
           />
         </Box>
-
       </Container>
     </Box>
   );
