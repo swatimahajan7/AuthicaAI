@@ -89,6 +89,7 @@ const AdminDashboard = () => {
           setSelectedNotification(notif);
           setActiveTab("Alerts");
         }}
+        isAdmin={true}
       />
 
       {activeTab === "Users" && <UserTable />}

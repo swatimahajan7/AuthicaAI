@@ -26,6 +26,8 @@ export interface User {
   phone: string;
   risk: 'Medium' | 'High' | 'Severe';
   isAdmin?: boolean;
+  faceRecognition?:string;
+  authenticatorEnabled?:boolean
 }
 
 interface AuthContextType {

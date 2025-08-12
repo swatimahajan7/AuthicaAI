@@ -15,26 +15,29 @@ import MenuItem from "@mui/material/MenuItem";
 import Badge from "@mui/material/Badge";
 import { NotificationsList, type NotificationItem } from "./NotificationsList";
 import { useNavigate } from "react-router";
+import { useAuthContext } from '../context/globalAuthContext';
 
 type ResponsiveAppBarProps = {
-  notifications: NotificationItem[];
+  notifications?: NotificationItem[];
   onTabChange?: (tabName: string) => void;
   onNotificationSelect?: (notif: NotificationItem) => void;
+  isAdmin:boolean
 };
 
 const pages = ["Users", "Risk Policy", "Alerts"];
-const settings = ["Logout"];
+const settings = ["Profile", "Logout"];
 
-function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect }: ResponsiveAppBarProps) {
+function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, isAdmin }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElNotifications, setAnchorElNotifications] = React.useState<null | HTMLElement>(null);
 
   const navigate = useNavigate();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { setCurrentUser } = useAuthContext();
+  const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   const handleNotificationClick = (id: number) => {
-    const notif = notifications.find((n) => n.id === id)!;
+    const notif = (notifications ?? []).find((n) => n.id === id)!;
     onTabChange?.("Alerts");
     onNotificationSelect?.(notif);
     setAnchorElNotifications(null);
@@ -42,7 +45,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect }: 
 
   return (
     <>
-      <AppBar position="static" color="primary">
+      <AppBar position="fixed" color="primary">
         <Container maxWidth={false}>
           <Toolbar disableGutters>
             <img src="../src/assets/AuthicaAI_logo.svg" width={200} />
@@ -56,55 +59,68 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect }: 
                 open={Boolean(anchorElNav)}
                 onClose={() => setAnchorElNav(null)}
               >
-                {pages.map((page) => (
-                  <MenuItem
-                    key={page}
-                    onClick={() => {
-                      setAnchorElNav(null);
-                      onTabChange?.(page);
-                    }}
-                  >
-                    <Typography textAlign="center">{page}</Typography>
-                  </MenuItem>
-                ))}
+                {isAdmin &&
+                  pages.map((page) => (
+                    <MenuItem
+                      key={page}
+                      onClick={() => {
+                        setAnchorElNav(null);
+                        onTabChange?.(page);
+                      }}
+                    >
+                      <Typography textAlign="center">{page}</Typography>
+                    </MenuItem>
+                  ))}
               </Menu>
             </Box>
 
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-              {pages.map((page) => (
-                <Button
-                  key={page}
-                  onClick={() => onTabChange?.(page)}
-                  sx={{
-                    my: 2,
-                    color: "white",
-                    display: "block",
-                    "&:hover": { backgroundColor: "primary.dark" },
-                    textTransform: "none",
-                    fontSize: 16,
-                  }}
-                >
-                  {page}
-                </Button>
-              ))}
+              {isAdmin &&
+                pages.map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => {
+                      onTabChange?.(page);
+                    }}
+                    sx={{
+                      my: 2,
+                      color: "white",
+                      display: "block",
+                      "&:hover": {
+                        backgroundColor: "primary.dark",
+                      },
+                      textTransform: "none",
+                      fontSize: 16,
+                    }}
+                  >
+                    {page}
+                  </Button>
+                ))}
             </Box>
 
             <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
-              <Tooltip title="View notifications">
-                <IconButton onClick={(e) => setAnchorElNotifications(e.currentTarget)} sx={{ p: 0, mr: 2 }}>
-                  <Badge color="error" variant={unreadCount > 0 ? "dot" : "standard"} overlap="circular">
-                    <NotificationsIcon sx={{
-                      color: 'white'
-                    }} />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
+              {isAdmin && (
+                <Tooltip title="View notifications">
+                  <IconButton
+                    onClick={(e) => setAnchorElNotifications(e.currentTarget)}
+                    sx={{ p: 0, mr: 2, color: "inherit" }}
+                  >
+                    <Badge
+                      color="error"
+                      variant={unreadCount > 0 ? "dot" : "standard"}
+                      overlap="circular"
+                    >
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
               <Menu
                 anchorEl={anchorElNotifications}
                 open={Boolean(anchorElNotifications)}
                 onClose={() => setAnchorElNotifications(null)}
               >
-                <NotificationsList notifications={notifications} onItemClick={handleNotificationClick} />
+                <NotificationsList notifications={notifications ?? []} onItemClick={handleNotificationClick} />
               </Menu>
 
               <Tooltip title="Open settings">
@@ -118,7 +134,17 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect }: 
                 onClose={() => setAnchorElUser(null)}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={() => navigate("/signin")}>
+                  <MenuItem
+                    key={setting}
+                    onClick={() => {
+                      if (setting === "Profile") {
+                        navigate("/userProfile");
+                      } else if (setting === "Logout") {
+                        setCurrentUser(null);
+                        navigate("/signin");
+                      }
+                    }}
+                  >
                     <Typography textAlign="center">{setting}</Typography>
                   </MenuItem>
                 ))}

@@ -4,16 +4,17 @@ import { useNavigate } from 'react-router';
 
 interface SigninSuccessProps {
     isAdmin: boolean;
+    username?:string
 }
 
-const SigninSuccess = ({ isAdmin }: SigninSuccessProps) => {
+const SigninSuccess = ({ isAdmin,username }: SigninSuccessProps) => {
     
     const navigate = useNavigate()
     const handleProceed = () => {
         if(isAdmin){
             navigate('/adminDashboard')
         }else{
-            navigate('/userDashboard')
+            navigate(`/userHome/${username}`)
         }
         console.log('Signed in successfully!');
     };
@@ -39,7 +40,7 @@ const SigninSuccess = ({ isAdmin }: SigninSuccessProps) => {
             </Typography>
 
             <Button variant="contained" color="primary" onClick={handleProceed}>
-                Go to Dashboard
+                Go to {isAdmin ? 'Dashboard': 'Home'} Page
             </Button>
         </Box>
     );

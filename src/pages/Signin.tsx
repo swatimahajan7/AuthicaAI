@@ -53,7 +53,7 @@ const Signin = () => {
     }
   }, [riskConfig]);
 
-  const handleContinue = async () => {
+  const handleContinue = async () => {  
     if (currentStep === AuthMethods.usernamePassword) {
       const isValid = await signinFormRef.current?.validate();
       if (!isValid) return;
@@ -68,12 +68,12 @@ const Signin = () => {
             requireEmailOTP: userRiskConfig.requireEmailOTP,
             requirePhoneOTP: userRiskConfig.requirePhoneOTP,
           };
-          setCurrentUser(updatedUser);
+          await setCurrentUser(updatedUser);
           setAllSteps(userRiskConfig.authMethods);
           setAdminUser(updatedUser.isAdmin || false);
 
           if (userRiskConfig.authMethods.length === 1) {
-            navigate(updatedUser.isAdmin ? "/adminDashboard" : "/userDashboard");
+            navigate(updatedUser.isAdmin ? "/adminDashboard" : `/userHome/${user.username}`);
           } else {
             setCurrentStep(userRiskConfig.authMethods[1]);
           }
@@ -101,7 +101,7 @@ const Signin = () => {
     if (nextIndex < allSteps.length) {
       setCurrentStep(allSteps[nextIndex]);
     } else {
-      navigate(adminUser ? "/adminDashboard" : "/userDashboard");
+      navigate(adminUser ? "/adminDashboard" : `/userHome/${currentUser?.username}`);
     }
   };
 
@@ -124,7 +124,7 @@ const Signin = () => {
           }}
         >
           <img src="../src/assets/logo.svg" width={150} className="logo" />
-          <img src="../src/assets/AuthicaAI_logo.svg" width={200} className="logo" />
+          <img src="../src/assets/darkAuthica.svg" width={210} className="logo" style={{ marginTop: "-70px", marginBottom:"-70px", marginLeft: "15px"}} />
           {currentStep === AuthMethods.usernamePassword && (
             <SigninForm ref={signinFormRef} onVerified={handleContinue} />
           )}
