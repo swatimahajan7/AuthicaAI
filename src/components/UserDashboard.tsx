@@ -28,7 +28,7 @@ const UserDashboard: React.FC = () => {
   return (
     <div>
       <Navbar isAdmin={false} />
-      <UserDetailsCard username={username}/>
+      <UserDetailsCard username={username} />
 
     </div>
   );
@@ -85,10 +85,10 @@ interface UserDetailsCardProps {
 
 const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
   const { users } = useAuthContext();
-  const currentUser = users.find (user => user.username == username);
+  const currentUser = users.find(user => user.username == username);
   const navigate = useNavigate();
   const handleNameClick = () => {
-    navigate("/userProfile"); 
+    navigate("/userProfile");
   };
 
 
@@ -104,19 +104,19 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
 
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, minHeight: '100vh', backgroundColor: '#f5f5f5' , pt: { xs: 10, sm: 12 }, }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       <StyledCard>
-        <CardContent sx={{ p: { xs: 2, sm: 4 } ,}}>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            mb: 4 ,
+        <CardContent sx={{ p: { xs: 2, sm: 4 }, }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 4,
           }}>
             <Avatar
-              sx={{ 
-                width: { xs: 80, sm: 100 }, 
-                height: { xs: 80, sm: 100 }, 
+              sx={{
+                width: { xs: 80, sm: 100 },
+                height: { xs: 80, sm: 100 },
                 fontSize: { xs: '2rem', sm: '2.5rem' },
                 bgcolor: 'primary.main',
                 mb: 2
@@ -124,12 +124,11 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
             >
               {currentUser?.name.charAt(0).toUpperCase()}
             </Avatar>
-            <Typography 
-              variant="h4" 
-              component="h1" 
+            <Typography
+              variant="h5"
+              component="h5"
               fontWeight="600"
-              sx={{ 
-                fontSize: { xs: '1.5rem', sm: '2rem' },
+              sx={{
                 textAlign: 'center'
               }}
             >
@@ -142,8 +141,8 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
               <DetailItem elevation={1}>
                 <Person sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />
                 <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="subtitle2" 
+                  <Typography
+                    variant="subtitle2"
                     color="textSecondary"
                     sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
@@ -163,17 +162,17 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
               <DetailItem elevation={1}>
                 <Email sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />
                 <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="subtitle2" 
+                  <Typography
+                    variant="subtitle2"
                     color="textSecondary"
                     sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
                     Email Address
                   </Typography>
-                  <Typography 
-                    variant="h6" 
+                  <Typography
+                    variant="h6"
                     fontWeight="500"
-                    sx={{ 
+                    sx={{
                       fontSize: { xs: '1rem', sm: '1.25rem' },
                       wordBreak: 'break-all'
                     }}
@@ -188,15 +187,15 @@ const UserDetailsCard: React.FC<UserDetailsCardProps> = ({ username }) => {
               <DetailItem elevation={1}>
                 <CalendarToday sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 28 } }} />
                 <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="subtitle2" 
+                  <Typography
+                    variant="subtitle2"
                     color="textSecondary"
                     sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
                     Signup Date
                   </Typography>
-                  <Typography 
-                    variant="h6" 
+                  <Typography
+                    variant="h6"
                     fontWeight="500"
                     sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
                   >

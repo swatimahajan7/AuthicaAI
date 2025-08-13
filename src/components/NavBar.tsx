@@ -21,7 +21,7 @@ type ResponsiveAppBarProps = {
   notifications?: NotificationItem[];
   onTabChange?: (tabName: string) => void;
   onNotificationSelect?: (notif: NotificationItem) => void;
-  isAdmin:boolean
+  isAdmin: boolean
 };
 
 const pages = ["Users", "Risk Policy", "Alerts"];
@@ -45,7 +45,7 @@ function ResponsiveAppBar({ notifications, onTabChange, onNotificationSelect, is
 
   return (
     <>
-      <AppBar position="fixed" color="primary">
+      <AppBar position='relative' color="primary">
         <Container maxWidth={false}>
           <Toolbar disableGutters>
             <img src="../src/assets/AuthicaAI_logo.svg" width={200} />
